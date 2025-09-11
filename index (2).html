@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plaza Comfort — Lyric Square Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+  <style>
+    :root { --bg:#0b0f14; --card:#121922; --muted:#7a8aa0; --text:#e6eef8; --accent:#66d9e8; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#0b0f14,#0e1520);color:var(--text)}
+    .wrap{max-width:1050px;margin:24px auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+    .card{background:var(--card);border:1px solid #1e2835;border-radius:18px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+    h1{margin:0 0 8px 0;font-size:26px;letter-spacing:.2px}
+    .sub{color:var(--muted);font-size:13px}
+    .score{display:flex;align-items:center;gap:18px;margin:8px 0 4px}
+    .ring{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%), #243043 0%);display:grid;place-items:center}
+    .ring span{background:#0e1520;border-radius:50%;display:grid;place-items:center;width:92px;height:92px;font-size:28px;font-weight:800}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+    .chip{background:#0d1420;border:1px solid #233146;border-radius:999px;padding:6px 10px;font-size:12px}
+    .kvs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+    .kv{padding:10px;border-radius:12px;background:#0d1420;border:1px solid #213047}
+    .kv h4{margin:0 0 6px 0;font-size:12px;color:var(--muted);font-weight:600}
+    .kv div{font-size:14px}
+    .bars{display:grid;gap:8px}
+    .bar{display:flex;align-items:center;gap:10px}
+    .bar label{width:120px;color:var(--muted);font-size:12px}
+    .bar .track{flex:1;height:10px;background:#0c1220;border:1px solid #253248;border-radius:999px;overflow:hidden}
+    .bar .fill{height:100%;background:var(--accent);width:0%}
+    .tip{margin-top:10px;color:#c8d6e5;font-size:14px}
+    .small{font-size:12px;color:var(--muted)}
+    input[type=range]{width:100%}
+    .controls{display:grid;gap:12px}
+    .control{background:#0c1420;border:1px solid #223048;padding:12px;border-radius:12px}
+    .control h3{margin:0 0 6px 0;font-size:14px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .footer{margin-top:16px;color:var(--muted);font-size:12px}
+    a{color:#8bd3ea;text-decoration:none}
+    .btn{display:inline-block;padding:8px 12px;border-radius:10px;background:#122033;border:1px solid #22354d;font-size:12px}
+    #chart svg text{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="grid">
+      <div class="card" id="left">
+        <h1>Plaza Comfort Score</h1>
+        <div class="sub">Lyric Square, Hammersmith • live demo</div>
+        <div class="score">
+          <div class="ring" style="--p:60">
+            <span id="score">--</span>
+          </div>
+          <div>
+            <div id="band" class="sub">calculating…</div>
+            <div class="chips" id="chips"></div>
+          </div>
+        </div>
+        <div class="kvs">
+          <div class="kv"><h4>Weather now</h4><div id="wx">—</div></div>
+          <div class="kv"><h4>Air & noise</h4><div id="aq">—</div></div>
+        </div>
+        <div class="bars" id="bars" style="margin-top:12px"></div>
+        <div class="kv" id="chartWrap"><h4>Next 24 hours (07:00–23:00)</h4><div id="chart" style="width:100%;height:180px"></div><div class="small" id="peaks">—</div></div>
+        <div class="tip" id="tip">Tip loads here</div>
+        <div class="kv"><h4>Feedback</h4>
+          <div class="small">Does this match how it feels right now?</div>
+          <div style="display:flex;gap:8px;margin:8px 0">
+            <button id="fbYes" class="btn">Yes</button>
+            <button id="fbNo" class="btn">No</button>
+            <label class="small" style="display:flex;align-items:center;gap:6px;margin-left:8px">
+              <input type="checkbox" id="consent" checked> allow anonymous feedback
+            </label>
+          </div>
+          <textarea id="fbText" placeholder="optional: what felt off?" rows="2" style="width:100%;background:#0d1420;border:1px solid #223048;border-radius:8px;color:#e6eef8;padding:8px"></textarea>
+          <div class="small" id="fbStatus"></div>
+        </div>
+        <div class="footer">Sources: Open‑Meteo weather & air‑quality, SunCalc solar. DEFRA strategic noise baseline set as a site constant for demo. <a href="#" id="refresh" class="btn">Refresh</a></div>
+      </div>
+      <div class="card">
+        <h2 style="margin:0 0 8px 0;font-size:18px">Model controls</h2>
+        <div class="small" style="margin-bottom:10px">Tune live for this site. Your preferences are saved in local storage.</div>
+        <div class="controls">
+          <div class="control">
+            <h3>Site constants</h3>
+            <div class="row">
+              <label>DEFRA Lden (dB): <input type="number" id="lden" min="45" max="80" step="1" value="60"></label>
+              <label>Amenity factor (0–1): <input type="number" id="amenity" min="0" max="1" step="0.05" value="0.60"></label>
+            </div>
+            <div class="row">
+              <label>Shade fraction at 09:00 (0–1): <input type="number" id="shade" min="0" max="1" step="0.05" value="0.25"></label>
+              <label>Shelter factor (0–1): <input type="number" id="shelter" min="0" max="1" step="0.05" value="0.30"></label>
+            </div>
+            <div class="row">
+              <label>Busy slider (observed) 0–100: <input type="range" id="busySlider" min="0" max="100" value="40"></label>
+            </div>
+            <div class="small">Amenity down-weights the ceiling for places with low greenery or visual delight. Busy slider is a manual override until you wire a real feed.</div>
+          </div>
+          <div class="control">
+            <h3>Weights</h3>
+            <div class="row">
+              <label>Thermal 35%<input type="range" id="wThermal" min="0" max="50" value="35"></label>
+              <label>Acoustic 15%<input type="range" id="wAcoustic" min="0" max="30" value="15"></label>
+            </div>
+            <div class="row">
+              <label>Air 10%<input type="range" id="wAir" min="0" max="25" value="10"></label>
+              <label>Wind 15%<input type="range" id="wWind" min="0" max="30" value="15"></label>
+            </div>
+            <div class="row">
+              <label>SunFit 10%<input type="range" id="wSun" min="0" max="25" value="10"></label>
+              <label>Busyness 10%<input type="range" id="wBusy" min="0" max="25" value="10"></label>
+            </div>
+            <div class="row">
+              <label>Amenity 5%<input type="range" id="wAmen" min="0" max="20" value="5"></label>
+              <label>Rain penalty max<input type="range" id="rainMax" min="0" max="60" value="40"></label>
+            </div>
+            <div class="small">Weights auto-normalise to 100% before penalties.</div>
+          </div>
+          <div class="control">
+            <h3>Debug</h3>
+            <div id="debug" class="small">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+// --- lightweight telemetry & feedback ---
+const ANALYTICS_URL = ""; // set to your endpoint, e.g. https://yourdomain/collect
+function sha1(str){ const buf = new TextEncoder().encode(str); return crypto.subtle.digest('SHA-1', buf).then(b=>Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')); }
+function beacon(path, payload){ const consent = document.getElementById('consent'); if(consent && !consent.checked) return; const url=(ANALYTICS_URL||'').replace(/\/$/,''); if(!url) return; const blob=new Blob([JSON.stringify(payload)],{type:'application/json'}); if(navigator.sendBeacon){ navigator.sendBeacon(url+path, blob); } else { fetch(url+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{}); } }
+function nowIso(){ return new Date().toISOString(); }
+async function sessionId(){ const ua=navigator.userAgent; const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''; const seed=ua+tz+(localStorage.getItem('pc_sid')||Math.random()); const h=await sha1(seed); localStorage.setItem('pc_sid',h); return h.slice(0,16); }
+function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); } }
+
+const SITE = { name:"Lyric Square", lat:51.493, lon:-0.226, tz:"Europe/London" };
+const els = {
+  score: document.getElementById('score'), band: document.getElementById('band'), chips: document.getElementById('chips'), bars: document.getElementById('bars'), wx: document.getElementById('wx'), aq: document.getElementById('aq'), tip: document.getElementById('tip'), debug: document.getElementById('debug'), chart: document.getElementById('chart'), peaks: document.getElementById('peaks'),
+};
+const inputs = {
+  lden: document.getElementById('lden'), amenity: document.getElementById('amenity'), shade: document.getElementById('shade'), shelter: document.getElementById('shelter'), busySlider: document.getElementById('busySlider'), wThermal: document.getElementById('wThermal'), wAcoustic: document.getElementById('wAcoustic'), wAir: document.getElementById('wAir'), wWind: document.getElementById('wWind'), wSun: document.getElementById('wSun'), wBusy: document.getElementById('wBusy'), wAmen: document.getElementById('wAmen'), rainMax: document.getElementById('rainMax'),
+};
+
+// persist controls
+Object.values(inputs).forEach(el=>{ const k='pc_'+el.id; const saved=localStorage.getItem(k); if(saved!==null) el.value=saved; el.addEventListener('input', ()=>{ localStorage.setItem(k, el.value); run(); }); });
+
+document.getElementById('refresh').onclick=(e)=>{e.preventDefault();run(true)};
+
+function banding(x){ if(x>=85) return 'Excellent'; if(x>=70) return 'Good'; if(x>=55) return 'Okay'; if(x>=40) return 'Harsh'; return 'Poor'; }
+function chip(label,val){ const c=document.createElement('div'); c.className='chip'; c.textContent=`${label}: ${val}`; return c; }
+function bar(label,pct){ const w=document.createElement('div'); w.className='bar'; const l=document.createElement('label'); l.textContent=label; const track=document.createElement('div'); track.className='track'; const fill=document.createElement('div'); fill.className='fill'; fill.style.width=`${Math.max(0,Math.min(100,pct))}%`; track.appendChild(fill); w.appendChild(l); w.appendChild(track); return w; }
+function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); } function lerp(a,b,t){ return a+(b-a)*t; }
+
+// Scoring tuned for UK realism + Med ideal
+function downscaleWind10mTo1p5m(v10){ return v10*0.4; }
+function scoreThermal(ta,rh,wind){ const windAdj=Math.max(0,(wind-2)*0.8); const apparent=ta-windAdj; const sigma=6; const s=Math.exp(-0.5*Math.pow((apparent-28)/sigma,2)); return Math.round(100*s); }
+function scoreAcoustic(lden){ if(lden<=50) return 90; if(lden<=55) return 75; if(lden<=60) return 60; if(lden<=65) return 40; if(lden<=70) return 25; return 10; }
+function scoreAir(daqi){ return clamp(110-10*daqi,10,100); }
+function scoreWind(v){ if(v<=2) return 95; if(v<=4) return 80; if(v<=6) return 55; if(v<=8) return 35; return 15; }
+function scoreSunFit(tempC,cloudFrac,shadeFrac){ const wantSun = tempC<18?1: tempC>24? -1 : lerp(1,-1,(tempC-18)/6); const exposure=(1-cloudFrac)*(1-shadeFrac); return Math.round(50 + 50*wantSun*(2*exposure-1)); }
+function scoreBusyness(c){ const ideal=55,w=20; const s=Math.exp(-0.5*Math.pow((c-ideal)/w,2)); return Math.round(100*s); }
+function scoreAmenity(f){ return Math.round(100*f); }
+function rainPenalty(mmPerHr,maxPenalty,shelter){ const s=Math.max(0,Math.min(1,shelter||0)); const exposure=1-s; const wetKick=mmPerHr>=0.1?8:0; const intensity=Math.min(14*Math.pow(mmPerHr,1.1), maxPenalty); return clamp((wetKick+intensity)*exposure,0,maxPenalty); }
+function normaliseWeights(ws){ const sum=Object.values(ws).reduce((a,b)=>a+b,0)||1; const out={}; for(const k in ws){ out[k]=ws[k]/sum; } return out; }
+
+async function fetchData(force=false){
+  const params=new URLSearchParams({ latitude:SITE.lat, longitude:SITE.lon, current:['temperature_2m','relative_humidity_2m','wind_speed_10m','precipitation','cloud_cover'].join(','), hourly:['temperature_2m','relative_humidity_2m','wind_speed_10m','precipitation','cloud_cover'].join(','), timezone:SITE.tz });
+  const wxUrl=`https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+  const aqParams=new URLSearchParams({ latitude:SITE.lat, longitude:SITE.lon, current:['pm2_5','european_aqi'].join(','), timezone:SITE.tz });
+  const aqUrl=`https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`;
+  const [wxRes, aqRes]=await Promise.all([ fetch(wxUrl,{cache:force?'reload':'default'}), fetch(aqUrl,{cache:force?'reload':'default'}) ]);
+  const wx=await wxRes.json(); const aq=await aqRes.json(); return { wx, aq };
+}
+
+function buildTip(scores){ const parts=[]; if(scores.Thermal<50) parts.push('seek sun or a sheltered nook'); if(scores.Wind<50) parts.push('sit near wind breaks'); if(scores.SunFit<50 && scores.Thermal>60) parts.push('prefer shade'); if(scores.Acoustic<50) parts.push('avoid edges near King St'); if(scores.Busyness<40) parts.push('expect it to feel sparse'); if(scores.Busyness>80) parts.push('avoid pinch points at food kiosks'); return parts.length? ('Tip: '+parts[0]) : 'Tip: pick a clean bench with back support.'; }
+function renderBars(scores){ els.bars.innerHTML=''; for(const [k,v] of Object.entries(scores)){ els.bars.appendChild(bar(k,v)); } }
+function renderChips(ctx){ els.chips.innerHTML=''; els.chips.appendChild(chip('Thermal', ctx.weather.temperature+"°C")); els.chips.appendChild(chip('Wind', ctx.weather.wind1p5.toFixed(1)+' m/s')); els.chips.appendChild(chip('Cloud', ctx.weather.cloud+'%')); els.chips.appendChild(chip('Rain', ctx.weather.rain+' mm/h')); els.chips.appendChild(chip('AQI', ctx.air.eaqi)); }
+
+function computeScoresAt(tC, rh, wind10, rain, cloud, shadeFrac, daqi, lden, amenityF, busy, W, rainMax){ const wind=downscaleWind10mTo1p5m(wind10); const sThermal=scoreThermal(tC,rh,wind); const sAcoustic=scoreAcoustic(lden); const sAir=scoreAir(daqi); const sWind=scoreWind(wind); const sSun=scoreSunFit(tC,cloud,shadeFrac); const sBusy=scoreBusyness(busy); const sAmen=scoreAmenity(amenityF); const scores={Thermal:sThermal,Acoustic:sAcoustic,Air:sAir,Wind:sWind,SunFit:sSun,Busyness:sBusy,Amenity:sAmen}; let total=0; for(const [k,v] of Object.entries(scores)) total += v*W[k]; total -= rainPenalty(rain, rainMax, parseFloat(inputs.shelter.value)); return { total: clamp(Math.round(total),0,100), scores } }
+
+function renderChart(points){ const W=els.chart.clientWidth||600; const H=els.chart.clientHeight||180; const pad={l:30,r:8,t:8,b:18}; const xs=i=> pad.l + i*(W-pad.l-pad.r)/(points.length-1); const ys=v=> pad.t + (100-v)*(H-pad.t-pad.b)/100; const path=points.map((p,i)=> (i?'L':'M')+xs(i)+' '+ys(p.v)).join(' '); const ticks=[0,25,50,75,100]; const grid=ticks.map(y=>`<line x1="${pad.l}" y1="${ys(y)}" x2="${W-pad.r}" y2="${ys(y)}" stroke="#223047" stroke-width="1" />`).join(''); const labels=ticks.map(y=>`<text x="6" y="${ys(y)+4}" font-size="10" fill="#7a8aa0">${y}</text>`).join(''); const xlabels=points.filter((_,i)=>i%4===0).map((p,i)=>`<text x="${xs(i*4)}" y="${H-2}" font-size="10" fill="#7a8aa0" text-anchor="middle">${p.hh}</text>`).join(''); els.chart.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><rect x="0" y="0" width="${W}" height="${H}" fill="#0d1420" />${grid}<path d="${path}" fill="none" stroke="#66d9e8" stroke-width="2" />${labels}${xlabels}</svg>`; }
+
+async function run(force=false){
+  els.band.textContent='calculating…';
+  try{
+    const sid = await sessionId();
+    const { wx, aq } = await fetchData(force);
+    const c=wx.current; const t=c.temperature_2m; const rh=c.relative_humidity_2m; const wind10=c.wind_speed_10m; const wind=downscaleWind10mTo1p5m(wind10); const rain=c.precipitation; const cloud=c.cloud_cover/100; const eaqi=aq?.current?.european_aqi ?? 3; const daqi=Math.min(10,Math.max(1,Math.round(eaqi*2)));
+
+    const shadeFrac=parseFloat(inputs.shade.value); const lden=parseFloat(inputs.lden.value); const amenityF=parseFloat(inputs.amenity.value); const busy=parseFloat(inputs.busySlider.value);
+    const W = normaliseWeights({ Thermal:+inputs.wThermal.value, Acoustic:+inputs.wAcoustic.value, Air:+inputs.wAir.value, Wind:+inputs.wWind.value, SunFit:+inputs.wSun.value, Busyness:+inputs.wBusy.value, Amenity:+inputs.wAmen.value });
+    const rainMax = +inputs.rainMax.value;
+
+    const nowScore = computeScoresAt(t,rh,wind10,rain,cloud,shadeFrac,daqi,lden,amenityF,busy,W,rainMax);
+
+    renderChips({weather:{temperature:t, wind1p5:wind, cloud:c.cloud_cover, rain}, air:{eaqi}});
+    els.wx.textContent = `${t.toFixed(1)}°C, wind ${wind.toFixed(1)} m/s, cloud ${c.cloud_cover}%`;
+    els.aq.textContent = `EU AQI ${eaqi} (~DAQI ${daqi}), Lden ${lden} dB`;
+    els.score.textContent = nowScore.total; document.querySelector('.ring').style.setProperty('--p', nowScore.total);
+    els.band.textContent = banding(nowScore.total);
+    renderBars(nowScore.scores);
+    els.tip.textContent = buildTip(nowScore.scores);
+
+    // 24h restricted to 07:00–23:00
+    const times = wx.hourly.time.map(t=>new Date(t));
+    const startIdx = times.findIndex(tt=> tt>= new Date());
+    const HRS = 24; const points=[]; const maxPen = rainMax;
+    for(let i=0;i<HRS && startIdx+i<times.length;i++){
+      const idx=startIdx+i; const tt=times[idx]; const hh=tt.getHours();
+      if(hh<7 || hh>23) continue; // skip overnight
+      const tC=wx.hourly.temperature_2m[idx]; const rhH=wx.hourly.relative_humidity_2m[idx]; const w10=wx.hourly.wind_speed_10m[idx]; const rainH=wx.hourly.precipitation[idx]; const cloudH=wx.hourly.cloud_cover[idx]/100;
+      const res=computeScoresAt(tC,rhH,w10,rainH,cloudH,shadeFrac,daqi,lden,amenityF,busy,W,maxPen);
+      points.push({ t:tt, v:res.total, hh:tt.toLocaleTimeString([], {hour:'2-digit'}) });
+    }
+    if(points.length){ renderChart(points); let best=points.reduce((a,b)=> b.v>a.v?b:a, points[0]); const window=points.filter(p=> Math.abs(p.v-best.v)<=3); const first=window[0], last=window[window.length-1]; els.peaks.textContent = `Peak ~${best.v}/100 from ${first.hh} to ${last.hh}`; }
+    else { els.chart.innerHTML=''; els.peaks.textContent='Score not available overnight'; }
+
+    // send a lightweight state snapshot
+    beacon('/state', { sid, ts: nowIso(), site:SITE, score: nowScore.total, inputs: { lden, amenityF, shadeFrac, shelter:+inputs.shelter.value, busy, weights: W, rainMax } });
+
+    els.debug.textContent = `t=${t}°C rh=${rh}% wind10=${wind10}m/s rain=${rain}mm/h cloud=${(cloud*100).toFixed(0)}%`;
+  }catch(e){ els.band.textContent='error loading data'; els.debug.textContent = e.message; }
+}
+
+// attach slider telemetry
+window.addEventListener('DOMContentLoaded', async ()=>{
+  const sid = await sessionId();
+  const inputEls = Array.from(document.querySelectorAll('input,select'));
+  const send = debounce(()=>{
+    const state = Object.fromEntries(inputEls.map(el=>[el.id||el.name, el.type==='range'||el.type==='number'? Number(el.value): el.value]));
+    beacon('/state', {sid, ts: nowIso(), site: SITE, state});
+  }, 400);
+  inputEls.forEach(el=> el.addEventListener('input', send));
+
+  // feedback buttons
+  const yes=document.getElementById('fbYes');
+  const no=document.getElementById('fbNo');
+  const txt=document.getElementById('fbText');
+  const fbStatus=document.getElementById('fbStatus');
+  function sendFb(val){ beacon('/feedback', { sid, ts: nowIso(), site: SITE, agree: val, text: txt.value.slice(0,300), score: Number(document.getElementById('score').textContent)||null }); fbStatus.textContent='Thanks — recorded.'; setTimeout(()=> fbStatus.textContent='', 3000); }
+  yes?.addEventListener('click', ()=>sendFb(true));
+  no?.addEventListener('click', ()=>sendFb(false));
+});
+
+run();
+</script>
+</body>
+</html>
