@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tranquility Index — Legal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0b0f14;--card:#121922;--muted:#7a8aa0;--text:#e6eef8;--accent:#66d9e8;--accent2:#90e0ef}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#0b0f14,#0e1520);color:var(--text)}
+    a{color:var(--accent2);text-decoration:none}
+    .container{max-width:1050px;margin:0 auto;padding:20px}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.3px}
+    .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(var(--accent),#1e2a3a);display:grid;place-items:center;font-size:14px}
+    .navlinks{display:flex;gap:14px;font-size:14px}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:18px 0}
+    .card{background:var(--card);border:1px solid #1e2835;border-radius:18px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+    .footer{margin:22px 0 40px 0;color:var(--muted);font-size:12px}
+    .sub{color:var(--muted);font-size:15px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand"><div class="logo">TI</div><a href="index.html" style="color:#e6eef8">Tranquility&nbsp;Index</a></div>
+      <div class="navlinks">
+        <a href="demo.html">Live demo</a>
+        <a href="legal.html" aria-current="page">Legal</a>
+      </div>
+    </div>
+
+    <h1 style="margin:10px 0 6px 0">Privacy & Terms</h1>
+    <p class="sub">Plain‑English summary. Prototype only. Obtain legal review before production.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">What we collect</h3>
+        <ul>
+          <li>Anonymous slider settings and weights on the demo.</li>
+          <li>One‑tap agreement (“Yes/No”) and optional comment.</li>
+          <li>Timestamp and site identifier (e.g., Lyric Square).</li>
+        </ul>
+        <p class="sub">No names, emails, precise location, or third‑party cookies. A short anonymous session hash may be stored.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Consent</h3>
+        <p class="sub">Telemetry sends only if the “allow anonymous feedback” box is ticked. You can untick it at any time.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Use of data</h3>
+        <ul>
+          <li>Improve the Tranquility Index model.</li>
+          <li>Aggregate insights on seasons, comfort, and events.</li>
+          <li>Evaluate pilots with public‑realm partners.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Retention</h3>
+        <p class="sub">Raw events up to 12 months, aggregates longer. You can request deletion referencing your session hash (if available).</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Cookies & storage</h3>
+        <p class="sub">No third‑party cookies. LocalStorage is used for your slider settings.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Third‑party services</h3>
+        <p class="sub">The demo calls Open‑Meteo for weather and air quality. Their terms apply.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Disclaimer</h3>
+        <p class="sub">The index is informational only and provided “as is.” Conditions change quickly. Use your judgment.</p>
+      </div>
+    </div>
+
+    <p class="footer">© 2025 Tranquility Index — Prototype.</p>
+  </div>
+</body>
+</html>
