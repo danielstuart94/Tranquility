@@ -1,18 +1,26 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tqind</title><link rel="stylesheet" href="styles.css"></head><body><div class="container">
+<title>Tqind</title><link rel="stylesheet" href="styles.css"></head>
+<body><div class="container">
 <nav><div style="display:flex;align-items:center;gap:10px;">
 <img src="logo.png" alt="Tqind" style="height:36px;width:36px;border-radius:9999px;"><strong>Tqind</strong></div>
 <div><a href="index.html">Home</a><a href="signup.html">Sign up</a><a href="news.html">News</a><a href="data.html" class="cta">Share data</a></div></nav>
 
-<h2 class="center">Share quick feedback</h2><p class="center">Help us learn what makes outdoor spaces feel tranquil.</p>
+<h2>Share quick feedback</h2>
+<p>Help us learn what makes outdoor spaces feel tranquil.</p>
 <form id="data-form">
-<label for="location">Where are you? (street/park or lat,lon)</label><input id="location" type="text" placeholder="Lyric Square, Hammersmith" required>
-<label for="rating">How tranquil is it right now? (0–100)</label><input id="rating" type="range" min="0" max="100" value="60" oninput="document.getElementById('ratingOut').innerText=this.value"><div id="ratingOut" class="range-output">60</div>
-<label for="is_tranquil">Would you come back here at this time?</label>
-<select id="is_tranquil"><option value="Yes">Yes</option><option value="No">No</option></select>
-<button type="submit">Submit</button><div id="data-status" class="notice" style="display:none;"></div>
+  <label>Location</label>
+  <input id="location" type="text" value="Lyric Square, Hammersmith" readonly style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:#f3f4f6">
+  <label style="margin-top:10px">How tranquil is it right now? (0–100)</label>
+  <input id="rating" type="range" min="0" max="100" value="60" oninput="document.getElementById('ratingOut').innerText=this.value" style="width:100%">
+  <div id="ratingOut" class="small">60</div>
+  <label style="margin-top:10px">Would you come back here at this time?</label>
+  <select id="is_tranquil" style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px">
+    <option value="Yes">Yes</option>
+    <option value="No">No</option>
+  </select>
+  <button type="submit" style="margin-top:10px">Submit</button>
+  <div id="data-status" class="small"></div>
 </form>
-<div class="warning"><strong>Setup needed:</strong> Replace <code>WEB_APP_URL</code> in <code>script.js</code> with your Google Apps Script Web App URL. Data will be written to your Google Sheet.</div>
-<footer>© 2025 Tqind · <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></footer></div>
-<script src="script.js"></script></body></html>
+<p class="small">Data goes to your Google Sheet via Apps Script. Replace the endpoint in <code>script.js</code>.</p>
+<footer>© 2025 Tqind</footer></div><script src='script.js'></script></body></html>

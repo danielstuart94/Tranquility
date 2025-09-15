@@ -1,17 +1,19 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tqind</title><link rel="stylesheet" href="styles.css"></head><body><div class="container">
+<title>Tqind</title><link rel="stylesheet" href="styles.css"></head>
+<body><div class="container">
 <nav><div style="display:flex;align-items:center;gap:10px;">
 <img src="logo.png" alt="Tqind" style="height:36px;width:36px;border-radius:9999px;"><strong>Tqind</strong></div>
 <div><a href="index.html">Home</a><a href="signup.html">Sign up</a><a href="news.html">News</a><a href="data.html" class="cta">Share data</a></div></nav>
 
-<h2 class="center">Join the beta</h2><p class="center">Get alerts and early access. We send low-volume, high-value updates.</p>
+<h2>Join the beta</h2>
 <form id="signup-form">
-<label for="email">Email</label><input id="email" type="email" placeholder="you@example.com" required>
-<label for="borough">Borough (optional)</label><input id="borough" type="text" placeholder="e.g., Hammersmith & Fulham">
-<button type="submit">Subscribe</button><p class="small">We respect privacy. Unsubscribe anytime.</p>
-<div id="signup-status" class="notice" style="display:none;"></div>
+  <label>Email</label>
+  <input id="email" type="email" placeholder="you@example.com" required style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px">
+  <label>Borough (optional)</label>
+  <input id="borough" type="text" placeholder="Hammersmith & Fulham" style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px">
+  <button type="submit" style="margin-top:10px">Subscribe</button>
+  <p class="small">We respect privacy. Unsubscribe anytime.</p>
+  <div id="signup-status" class="small"></div>
 </form>
-<div class="warning"><strong>Setup needed:</strong> Replace <code>WEB_APP_URL</code> in <code>script.js</code> with your Google Apps Script Web App URL to capture signups into your Google Sheet.</div>
-<footer>© 2025 Tqind · <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></footer></div>
-<script src="script.js"></script></body></html>
+<footer>© 2025 Tqind</footer></div><script src='script.js'></script></body></html>

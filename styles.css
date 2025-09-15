@@ -1,6 +1,6 @@
 
 :root { --brand:#2D8A7A; --accent:#0F3D37; --text:#1a1a1a; --muted:#6b7280; --bg:#fff; }
-*{box-sizing:border-box} html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol',sans-serif;color:var(--text);background:var(--bg)}
+*{box-sizing:border-box} html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg)}
 .container{max-width:980px;margin:0 auto;padding:24px}
 nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
 nav a{color:var(--text);text-decoration:none;margin-left:16px;font-weight:600}
@@ -14,12 +14,6 @@ nav a.cta{background:var(--brand);color:#fff;padding:8px 14px;border-radius:12px
 .card h3{margin-top:0}
 .card a.btn{display:inline-block;margin-top:12px;background:var(--brand);color:#fff;padding:8px 12px;border-radius:12px;text-decoration:none}
 footer{padding:48px 0 24px;color:var(--muted);font-size:14px;text-align:center}
-form{max-width:520px;margin:0 auto}
-label{display:block;font-weight:600;margin:12px 0 6px}
-input[type=email],input[type=text],input[type=range],select{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px}
-button{background:var(--brand);color:#fff;border:0;padding:12px 16px;border-radius:12px;font-weight:700;cursor:pointer}
+.gauge{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0}
+.big{font-size:48px;font-weight:800}
 .small{color:var(--muted);font-size:13px}
-.range-output{text-align:center;font-weight:700;margin-top:6px}
-.notice{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;padding:12px 16px;border-radius:12px;margin-top:16px}
-.warning{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;padding:12px 16px;border-radius:12px;margin-top:16px}
-.center{text-align:center}
