@@ -4,39 +4,35 @@
 <link rel="stylesheet" href="styles.css">
 </head><body>
 <div class="container">
-<nav>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <img src="logo.png" alt="Tqind" style="height:36px;width:36px;border-radius:9999px;">
-    <strong>Tqind</strong>
-  </div>
-  <div>
-    <span class="badge">Live demo • Lyric Square</span>
-  </div>
-</nav>
 
 <section class="hero">
-  <h1>Step out. Feel more.</h1>
-  <p>Lyric Square – hour‑by‑hour tranquillity for the next 24 hours. Adjust factors and see the curve update instantly.</p>
+  <div class="badge" id="statusBadge"><span id="statusLabel">–</span> <span class="sub" id="statusScore"></span></div>
+  <div class="tagline">Lyric Square • hour‑by‑hour tranquillity (next 24h). Adjust factors to see the curve update.</div>
 </section>
+
+<nav>
+  <div class="logoRow">
+    <img src="logo.png" alt="Tqind" style="height:32px;width:32px;border-radius:9999px;">
+    <div class="brand">Tqind</div>
+  </div>
+  <div><a class="btn" href="#controls">Adjust factors</a></div>
+</nav>
 
 <div class="grid">
   <div class="card">
     <h3>24‑hour forecast</h3>
-    <div class="output"><div class="score" id="nowScore">–</div><div class="small">Current Tqind</div></div>
-    <div id="chart" class="chart"></div>
-    <div class="bar-labels" id="chartLabels"></div>
-    <hr>
-    <table>
-      <thead><tr><th>Hour</th><th>Score</th></tr></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+    <div class="chartWrap">
+      <svg id="chart" viewBox="0 0 1000 220" preserveAspectRatio="none">
+        <polyline id="line" fill="none" stroke="var(--brand)" stroke-width="3" points=""/>
+        <g id="gridY"></g>
+      </svg>
+      <div class="gridCols" id="chartLabels"></div>
+    </div>
+    <div class="small">Auto evening adjustment applies after 19:00.</div>
   </div>
 
-  <div class="card">
+  <div class="card" id="controls">
     <h3>Adjust factors</h3>
-    <div class="toggle"><input type="checkbox" id="fakeTrees"><label for="fakeTrees">Fake trees installed</label></div>
-    <div class="toggle"><input type="checkbox" id="evening"><label for="evening">Evening mode</label></div>
-
     <label>Noise (lower is better)</label>
     <input id="noise" type="range" min="0" max="100" value="60">
     <label>Crowd density (lower is better)</label>
@@ -49,8 +45,7 @@
     <input id="events" type="range" min="0" max="100" value="20">
     <label>Temperature comfort</label>
     <input id="temp" type="range" min="0" max="100" value="50">
-    <hr>
-    <button id="reset">Reset</button>
+    <div style="margin-top:10px"><a class="btn" href="#" id="reset">Reset</a></div>
   </div>
 </div>
 
@@ -58,112 +53,81 @@
 </div>
 
 <script>
-function next24() {
-  const now = new Date();
-  const arr = [];
-  for (let i=0;i<24;i++) arr.push(new Date(now.getTime() + i*3600*1000));
-  return arr;
-}
+const WEIGHTS = {{ noise:0.28, crowd:0.18, shade:0.18, green:0.20, events:0.06, temp:0.10 }};
 
-const WEIGHTS = { noise:0.28, crowd:0.18, shade:0.18, green:0.20, events:0.06, temp:0.10 };
-
-function clamp(x,a=0,b=100){ return Math.max(a, Math.min(b, x)); }
-function factorToScore(key,v){
+function clamp(x,a=0,b=100){{ return Math.max(a, Math.min(b, x)); }}
+function factorToScore(key,v){{
   if (key==='noise' || key==='crowd') return 100 - v;
-  if (key==='events') { const diff = Math.abs(v - 30); return clamp(100 - diff*2); }
-  if (key==='temp') { const diff = Math.abs(v - 60); return clamp(100 - diff*1.2); }
+  if (key==='events') {{ const diff = Math.abs(v - 30); return clamp(100 - diff*2); }}
+  if (key==='temp') {{ const diff = Math.abs(v - 60); return clamp(100 - diff*1.2); }}
   return v;
-}
-
-function baseCurveForHour(h){
-  const lunchPeak = (h>=12 && h<=14)? 1:0;
-  const pmBusy = (h>=17 && h<=19)? 1:0;
-  const lateCalm = (h>=21 || h<=6)? 1:0;
-  return {
-    noise: 60 + 10*lunchPeak + 6*pmBusy - 8*lateCalm,
-    crowd: 55 + 15*lunchPeak + 8*pmBusy - 12*lateCalm,
-    shade: 30,
-    green: 25,
-    events: 20,
-    temp: 50
-  };
-}
-
-function applyToggles(vals, hour){
-  const v = Object.assign({}, vals);
-  if (document.getElementById('fakeTrees').checked) { v.shade = clamp(v.shade + 20); v.green = clamp(v.green + 10); }
-  if (document.getElementById('evening').checked) {
-    if (hour>=19 || hour<=6) { v.crowd = clamp(v.crowd - 15); v.noise = clamp(v.noise - 10); }
-  }
+}}
+function baseCurveForHour(h){{
+  const lunch = (h>=12 && h<=14)?1:0, pm=(h>=17 && h<=19)?1:0, night=(h>=21||h<=6)?1:0;
+  return {{ noise:60+10*lunch+6*pm-8*night, crowd:55+15*lunch+8*pm-12*night, shade:30, green:25, events:20, temp:50 }};
+}}
+function eveningAutoAdjust(vals,h){{
+  const v={{...vals}};
+  if (h>=19||h<=6){{ v.crowd = clamp(v.crowd-15); v.noise = clamp(v.noise-10); }}
   return v;
-}
+}}
+function computeScore(vals){{
+  let sum=0; for(const k in WEIGHTS){{ const fs=factorToScore(k, vals[k]); sum += fs*WEIGHTS[k]; }} return Math.round(sum);
+}}
+function statusFromScore(s){{
+  if (s>=75) return ['Great','great'];
+  if (s>=60) return ['Good','good'];
+  if (s>=45) return ['Fair','fair'];
+  return ['Poor','poor'];
+}}
+function next24(){{
+  const now=new Date(); const arr=[]; for(let i=0;i<24;i++) arr.push(new Date(now.getTime()+i*3600*1000)); return arr;
+}}
+function two(h){{return ('0'+h).slice(-2);}}
 
-function computeScore(vals){
-  let sum = 0;
-  for (const k in WEIGHTS) {
-    const fs = factorToScore(k, vals[k]);
-    sum += fs * WEIGHTS[k];
-  }
-  return Math.round(sum);
-}
+function render(){{
+  const sliders = ['noise','crowd','shade','green','events','temp'];
+  const ui={{}}; sliders.forEach(id=>ui[id]=parseInt(document.getElementById(id).value,10));
 
-function twoDigit(h) { return ('0' + h).slice(-2); }
-
-function render(){
   const hours = next24();
-  const chart = document.getElementById('chart');
-  const labels = document.getElementById('chartLabels');
-  const tbody = document.getElementById('tableBody');
-  chart.innerHTML=''; labels.innerHTML=''; tbody.innerHTML='';
+  const w=1000, h=220, left=30, right=10, top=10, bottom=20;
+  const xs = (i)=> left + (i*(w-left-right)/23);
+  const ys = (s)=> top + (h-top-bottom) * (1 - s/100);
 
-  const ui = {
-    noise: parseInt(document.getElementById('noise').value,10),
-    crowd: parseInt(document.getElementById('crowd').value,10),
-    shade: parseInt(document.getElementById('shade').value,10),
-    green: parseInt(document.getElementById('green').value,10),
-    events: parseInt(document.getElementById('events').value,10),
-    temp: parseInt(document.getElementById('temp').value,10)
-  };
+  const points=[]; const labels=document.getElementById('chartLabels'); labels.innerHTML='';
+  let currentScore = 0;
 
-  hours.forEach((d, idx) => {
-    const h = d.getHours();
-    const base = baseCurveForHour(h);
-    const mix = {};
-    for (const k in base) mix[k] = Math.round(base[k]*0.3 + ui[k]*0.7);
-    const adj = applyToggles(mix, h);
+  hours.forEach((d, idx)=>{{
+    const hr=d.getHours();
+    const base=baseCurveForHour(hr);
+    const mix={{}}; for(const k in base) mix[k]=Math.round(base[k]*0.3 + ui[k]*0.7);
+    const adj = eveningAutoAdjust(mix, hr);
     const score = computeScore(adj);
+    if (idx===0) currentScore = score;
+    const x=xs(idx), y=ys(score); points.push(x+','+y);
+    const lab=document.createElement('div'); lab.className='tick'; lab.textContent=two(hr); labels.appendChild(lab);
+  }});
 
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    bar.style.height = (Math.max(2, score) * 1.5) + 'px';
-    chart.appendChild(bar);
+  document.getElementById('line').setAttribute('points', points.join(' '));
 
-    const hourLabel = twoDigit(h);
-    const lab = document.createElement('div');
-    lab.textContent = hourLabel;
-    labels.appendChild(lab);
+  const [label, cls]=statusFromScore(currentScore);
+  const badge=document.getElementById('statusBadge');
+  badge.className='badge '+cls;
+  document.getElementById('statusLabel').textContent=label;
+  document.getElementById('statusScore').textContent=currentScore+' / 100';
+}}
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + hourLabel + ':00</td><td>' + score + '</td>';
-    tbody.appendChild(tr);
-
-    if (idx===0) document.getElementById('nowScore').textContent = score;
-  });
-}
-
-['noise','crowd','shade','green','events','temp','fakeTrees','evening'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener(el.type==='checkbox'?'change':'input', render);
+['noise','crowd','shade','green','events','temp'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', render);
 });
-document.getElementById('reset').addEventListener('click', () => {
+document.getElementById('reset').addEventListener('click', (e)=>{
+  e.preventDefault();
   document.getElementById('noise').value=60;
   document.getElementById('crowd').value=55;
   document.getElementById('shade').value=30;
   document.getElementById('green').value=25;
   document.getElementById('events').value=20;
   document.getElementById('temp').value=50;
-  document.getElementById('fakeTrees').checked=false;
-  document.getElementById('evening').checked=false;
   render();
 });
 
