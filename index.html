@@ -1,136 +1,61 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tqind – Lyric Square Live Demo</title>
-<link rel="stylesheet" href="styles.css">
-</head><body>
-<div class="container">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tqind — Step out. Feel more.</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <div class="brandRow">
+        <img src="logo.png" alt="Tqind" style="height:32px;width:32px;border-radius:9999px;" />
+        <div class="brandName">Tqind</div>
+      </div>
+      <div>
+        <a class="btn" href="lyric.html">Lyric Square demo</a>
+      </div>
+    </nav>
 
-<section class="hero">
-  <div class="badge" id="statusBadge"><span id="statusLabel">–</span> <span class="sub" id="statusScore"></span></div>
-  <div class="tagline">Lyric Square • hour‑by‑hour tranquillity (next 24h). Adjust factors to see the curve update.</div>
-</section>
+    <section class="hero">
+      <h1>Step out. Feel more.</h1>
+      <p>We bring people out to experience the world around them.</p>
+    </section>
 
-<nav>
-  <div class="logoRow">
-    <img src="logo.png" alt="Tqind" style="height:32px;width:32px;border-radius:9999px;">
-    <div class="brand">Tqind</div>
-  </div>
-  <div><a class="btn" href="#controls">Adjust factors</a></div>
-</nav>
+    <div class="grid">
+      <div class="card">
+        <h3>Join the beta</h3>
+        <p>Low-volume, high-value alerts. Be first to try new features.</p>
+        <form id="signup-form">
+          <label>Email</label>
+          <input id="email" type="email" placeholder="you@example.com" required />
+          <label>Borough (optional)</label>
+          <input id="borough" type="text" placeholder="Hammersmith & Fulham" />
+          <button type="submit">Subscribe</button>
+          <div id="signup-status" class="small"></div>
+        </form>
+        <div class="small" style="margin-top:8px;">Unsubscribe anytime.</div>
+      </div>
 
-<div class="grid">
-  <div class="card">
-    <h3>24‑hour forecast</h3>
-    <div class="chartWrap">
-      <svg id="chart" viewBox="0 0 1000 220" preserveAspectRatio="none">
-        <polyline id="line" fill="none" stroke="var(--brand)" stroke-width="3" points=""/>
-        <g id="gridY"></g>
-      </svg>
-      <div class="gridCols" id="chartLabels"></div>
+      <div class="card">
+        <h3>Lyric Square — is this about right?</h3>
+        <p>See the 24‑hour tranquillity curve for Lyric Square and adjust factors. Tell us if it feels accurate.</p>
+        <a class="btn" href="lyric.html">Open Lyric Square demo</a>
+      </div>
+
+      <div class="card">
+        <h3>News & Blog</h3>
+        <p>Coming soon: monthly rankings and design insights.</p>
+        <a class="btn" href="news.html">See updates</a>
+      </div>
     </div>
-    <div class="small">Auto evening adjustment applies after 19:00.</div>
+
+    <footer>© 2025 Tqind</footer>
   </div>
-
-  <div class="card" id="controls">
-    <h3>Adjust factors</h3>
-    <label>Noise (lower is better)</label>
-    <input id="noise" type="range" min="0" max="100" value="60">
-    <label>Crowd density (lower is better)</label>
-    <input id="crowd" type="range" min="0" max="100" value="55">
-    <label>Shade / microclimate</label>
-    <input id="shade" type="range" min="0" max="100" value="30">
-    <label>Greenery / planting</label>
-    <input id="green" type="range" min="0" max="100" value="25">
-    <label>Events / activation impact</label>
-    <input id="events" type="range" min="0" max="100" value="20">
-    <label>Temperature comfort</label>
-    <input id="temp" type="range" min="0" max="100" value="50">
-    <div style="margin-top:10px"><a class="btn" href="#" id="reset">Reset</a></div>
-  </div>
-</div>
-
-<footer>© 2025 Tqind</footer>
-</div>
-
-<script>
-const WEIGHTS = {{ noise:0.28, crowd:0.18, shade:0.18, green:0.20, events:0.06, temp:0.10 }};
-
-function clamp(x,a=0,b=100){{ return Math.max(a, Math.min(b, x)); }}
-function factorToScore(key,v){{
-  if (key==='noise' || key==='crowd') return 100 - v;
-  if (key==='events') {{ const diff = Math.abs(v - 30); return clamp(100 - diff*2); }}
-  if (key==='temp') {{ const diff = Math.abs(v - 60); return clamp(100 - diff*1.2); }}
-  return v;
-}}
-function baseCurveForHour(h){{
-  const lunch = (h>=12 && h<=14)?1:0, pm=(h>=17 && h<=19)?1:0, night=(h>=21||h<=6)?1:0;
-  return {{ noise:60+10*lunch+6*pm-8*night, crowd:55+15*lunch+8*pm-12*night, shade:30, green:25, events:20, temp:50 }};
-}}
-function eveningAutoAdjust(vals,h){{
-  const v={{...vals}};
-  if (h>=19||h<=6){{ v.crowd = clamp(v.crowd-15); v.noise = clamp(v.noise-10); }}
-  return v;
-}}
-function computeScore(vals){{
-  let sum=0; for(const k in WEIGHTS){{ const fs=factorToScore(k, vals[k]); sum += fs*WEIGHTS[k]; }} return Math.round(sum);
-}}
-function statusFromScore(s){{
-  if (s>=75) return ['Great','great'];
-  if (s>=60) return ['Good','good'];
-  if (s>=45) return ['Fair','fair'];
-  return ['Poor','poor'];
-}}
-function next24(){{
-  const now=new Date(); const arr=[]; for(let i=0;i<24;i++) arr.push(new Date(now.getTime()+i*3600*1000)); return arr;
-}}
-function two(h){{return ('0'+h).slice(-2);}}
-
-function render(){{
-  const sliders = ['noise','crowd','shade','green','events','temp'];
-  const ui={{}}; sliders.forEach(id=>ui[id]=parseInt(document.getElementById(id).value,10));
-
-  const hours = next24();
-  const w=1000, h=220, left=30, right=10, top=10, bottom=20;
-  const xs = (i)=> left + (i*(w-left-right)/23);
-  const ys = (s)=> top + (h-top-bottom) * (1 - s/100);
-
-  const points=[]; const labels=document.getElementById('chartLabels'); labels.innerHTML='';
-  let currentScore = 0;
-
-  hours.forEach((d, idx)=>{{
-    const hr=d.getHours();
-    const base=baseCurveForHour(hr);
-    const mix={{}}; for(const k in base) mix[k]=Math.round(base[k]*0.3 + ui[k]*0.7);
-    const adj = eveningAutoAdjust(mix, hr);
-    const score = computeScore(adj);
-    if (idx===0) currentScore = score;
-    const x=xs(idx), y=ys(score); points.push(x+','+y);
-    const lab=document.createElement('div'); lab.className='tick'; lab.textContent=two(hr); labels.appendChild(lab);
-  }});
-
-  document.getElementById('line').setAttribute('points', points.join(' '));
-
-  const [label, cls]=statusFromScore(currentScore);
-  const badge=document.getElementById('statusBadge');
-  badge.className='badge '+cls;
-  document.getElementById('statusLabel').textContent=label;
-  document.getElementById('statusScore').textContent=currentScore+' / 100';
-}}
-
-['noise','crowd','shade','green','events','temp'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', render);
-});
-document.getElementById('reset').addEventListener('click', (e)=>{
-  e.preventDefault();
-  document.getElementById('noise').value=60;
-  document.getElementById('crowd').value=55;
-  document.getElementById('shade').value=30;
-  document.getElementById('green').value=25;
-  document.getElementById('events').value=20;
-  document.getElementById('temp').value=50;
-  render();
-});
-
-render();
-</script>
-</body></html>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,61 +1,110 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tqind</title><link rel="stylesheet" href="styles.css"></head><body>
-<div class="container"><nav><div style="display:flex;align-items:center;gap:10px;">
-<img src="logo.png" alt="Tqind" style="height:36px;width:36px;border-radius:9999px;"><strong>Tqind</strong></div>
-<div><a href="index.html">Home</a><a href="signup.html">Sign up</a><a href="news.html">News</a><a href="data.html" class="cta">Share data</a></div></nav>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tqind — Lyric Square Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <div class="brandRow">
+        <img src="logo.png" alt="Tqind" style="height:32px;width:32px;border-radius:9999px;" />
+        <div class="brandName">Tqind</div>
+      </div>
+      <div>
+        <a class="btn" href="index.html">Back</a>
+      </div>
+    </nav>
 
-<section class="hero">
-  <h1>Lyric Square – Interactive Demo</h1>
-  <p>Adjust factors to see how the Tqind score changes. Toggle “Fake trees” to compare before/after.</p>
-  <span class="badge">Demo • Not final weights</span>
-</section>
+    <section class="hero">
+      <div class="badge" id="statusBadge"><span id="statusLabel">–</span> <span class="sub" id="statusScore"></span></div>
+      <p>Lyric Square • hour‑by‑hour tranquillity (next 24h). Adjust factors and tell us if it’s accurate.</p>
+    </section>
 
-<div class="grid">
-  <div class="card">
-    <h3>Score</h3>
-    <div class="output">
-      <div id="score" class="score">50</div>
-      <div class="small">Tqind (0–100)</div>
+    <div class="twoCol">
+      <div class="card">
+        <h3>24‑hour forecast</h3>
+        <div class="chartWrap">
+          <svg id="chart" viewBox="0 0 1000 220" preserveAspectRatio="none">
+            <polyline id="line" fill="none" stroke="var(--brand)" stroke-width="3" points=""/>
+            <g id="gridY"></g>
+          </svg>
+          <div class="gridCols" id="chartLabels"></div>
+        </div>
+        <div class="small">Evening adjustment is applied automatically after 19:00.</div>
+      </div>
+
+      <div class="card" id="controls">
+        <h3>Adjust factors</h3>
+        <label>Noise (lower is better)</label>
+        <input id="noise" type="range" min="0" max="100" value="60" />
+        <label>Crowd density (lower is better)</label>
+        <input id="crowd" type="range" min="0" max="100" value="55" />
+        <label>Shade / microclimate</label>
+        <input id="shade" type="range" min="0" max="100" value="30" />
+        <label>Greenery / planting</label>
+        <input id="green" type="range" min="0" max="100" value="25" />
+        <label>Events / activation impact</label>
+        <input id="events" type="range" min="0" max="100" value="20" />
+        <label>Temperature comfort</label>
+        <input id="temp" type="range" min="0" max="100" value="50" />
+        <hr />
+        <h3>Is this about right?</h3>
+        <div class="toggleRow">
+          <label><input type="radio" name="aboutRight" value="Yes" checked /> Yes</label>
+          <label><input type="radio" name="aboutRight" value="No" /> No</label>
+        </div>
+        <label>Comments</label>
+        <textarea id="comments" placeholder="What feels off or spot on?"></textarea>
+        <button id="sendFeedback">Send feedback</button>
+        <div id="feedbackStatus" class="small" style="margin-top:8px;"></div>
+      </div>
     </div>
-    <div class="small">Location: Lyric Square, Hammersmith</div>
-    <hr>
-    <div class="toggle">
-      <input type="checkbox" id="fakeTrees">
-      <label for="fakeTrees">Fake trees installed</label>
-    </div>
-    <div class="toggle">
-      <input type="checkbox" id="evening">
-      <label for="evening">Evening mode</label>
-    </div>
-    <button id="reset">Reset to baseline</button>
+
+    <footer>© 2025 Tqind</footer>
   </div>
 
-  <div class="card">
-    <h3>Environment</h3>
-    <label>Noise (lower is better)</label>
-    <input id="noise" type="range" min="0" max="100" value="60">
-    <label>Crowd density (lower is better)</label>
-    <input id="crowd" type="range" min="0" max="100" value="55">
-    <label>Shade / microclimate</label>
-    <input id="shade" type="range" min="0" max="100" value="30">
-    <label>Greenery / planting</label>
-    <input id="green" type="range" min="0" max="100" value="25">
-    <label>Events / activation impact</label>
-    <input id="events" type="range" min="0" max="100" value="20">
-    <label>Temperature comfort</label>
-    <input id="temp" type="range" min="0" max="100" value="50">
-  </div>
+  <script src="script.js"></script>
+  <script>
+  // --- scoring + chart identical to previous branded demo ---
+  const WEIGHTS = { noise:0.28, crowd:0.18, shade:0.18, green:0.20, events:0.06, temp:0.10 };
+  const clamp=(x,a=0,b=100)=>Math.max(a,Math.min(b,x));
+  const factorToScore=(k,v)=> (k==='noise'||k==='crowd')?100-v:(k==='events'?clamp(100-Math.abs(v-30)*2):(k==='temp'?clamp(100-Math.abs(v-60)*1.2):v));
+  const baseCurveForHour=(h)=>{const L=(h>=12&&h<=14)?1:0,P=(h>=17&&h<=19)?1:0,N=(h>=21||h<=6)?1:0;return {noise:60+10*L+6*P-8*N,crowd:55+15*L+8*P-12*N,shade:30,green:25,events:20,temp:50};};
+  const eveningAuto=(vals,h)=>{const v={...vals}; if(h>=19||h<=6){v.crowd=clamp(v.crowd-15); v.noise=clamp(v.noise-10);} return v;};
+  const computeScore=(vals)=>Math.round(Object.keys(WEIGHTS).reduce((s,k)=>s+factorToScore(k,vals[k])*WEIGHTS[k],0));
+  const statusFrom=(s)=> s>=75?['Great','great']: s>=60?['Good','good']: s>=45?['Fair','fair']:['Poor','poor'];
+  const next24=()=>{const now=new Date(),a=[]; for(let i=0;i<24;i++) a.push(new Date(now.getTime()+i*3600*1000)); return a;};
+  const two=(h)=>('0'+h).slice(-2);
 
-  <div class="card">
-    <h3>Breakdown</h3>
-    <table class="table">
-      <tr><th>Factor</th><th>Weight</th><th>Contribution</th></tr>
-      <tbody id="breakdown"></tbody>
-    </table>
-    <hr>
-    <button id="save">Save demo reading to Sheet</button>
-    <div id="status" class="small"></div>
-  </div>
-</div>
-<div class='footer'>© 2025 Tqind</div></div><script src='script.js'></script></body></html>
+  function render(){ 
+    const vals={ noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, events:+events.value, temp:+temp.value };
+    const hours=next24();
+    const w=1000,h=220,left=30,right=10,top=10,bottom=20;
+    const xs=(i)=> left + (i*(w-left-right)/23);
+    const ys=(s)=> top + (h-top-bottom) * (1 - s/100);
+    const pts=[]; chartLabels.innerHTML='';
+    let nowScore=0;
+    hours.forEach((d,i)=>{
+      const hr=d.getHours(), base=baseCurveForHour(hr);
+      const mix={}; for(const k in base) mix[k]=Math.round(base[k]*0.3 + vals[k]*0.7);
+      const adj=eveningAuto(mix,hr), score=computeScore(adj);
+      if(i===0) nowScore=score;
+      pts.push(xs(i)+','+ys(score));
+      const lab=document.createElement('div'); lab.className='tick'; lab.textContent=two(hr); chartLabels.appendChild(lab);
+    });
+    line.setAttribute('points', pts.join(' '));
+    const [label,cls]=statusFrom(nowScore);
+    statusBadge.className='badge '+cls; statusLabel.textContent=label; statusScore.textContent=nowScore+' / 100';
+  }
+
+  ['noise','crowd','shade','green','events','temp'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+  render();
+  </script>
+</body>
+</html>
