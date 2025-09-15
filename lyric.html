@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tqind</title><link rel="stylesheet" href="styles.css"></head><body>
+<div class="container"><nav><div style="display:flex;align-items:center;gap:10px;">
+<img src="logo.png" alt="Tqind" style="height:36px;width:36px;border-radius:9999px;"><strong>Tqind</strong></div>
+<div><a href="index.html">Home</a><a href="signup.html">Sign up</a><a href="news.html">News</a><a href="data.html" class="cta">Share data</a></div></nav>
+
+<section class="hero">
+  <h1>Lyric Square – Interactive Demo</h1>
+  <p>Adjust factors to see how the Tqind score changes. Toggle “Fake trees” to compare before/after.</p>
+  <span class="badge">Demo • Not final weights</span>
+</section>
+
+<div class="grid">
+  <div class="card">
+    <h3>Score</h3>
+    <div class="output">
+      <div id="score" class="score">50</div>
+      <div class="small">Tqind (0–100)</div>
+    </div>
+    <div class="small">Location: Lyric Square, Hammersmith</div>
+    <hr>
+    <div class="toggle">
+      <input type="checkbox" id="fakeTrees">
+      <label for="fakeTrees">Fake trees installed</label>
+    </div>
+    <div class="toggle">
+      <input type="checkbox" id="evening">
+      <label for="evening">Evening mode</label>
+    </div>
+    <button id="reset">Reset to baseline</button>
+  </div>
+
+  <div class="card">
+    <h3>Environment</h3>
+    <label>Noise (lower is better)</label>
+    <input id="noise" type="range" min="0" max="100" value="60">
+    <label>Crowd density (lower is better)</label>
+    <input id="crowd" type="range" min="0" max="100" value="55">
+    <label>Shade / microclimate</label>
+    <input id="shade" type="range" min="0" max="100" value="30">
+    <label>Greenery / planting</label>
+    <input id="green" type="range" min="0" max="100" value="25">
+    <label>Events / activation impact</label>
+    <input id="events" type="range" min="0" max="100" value="20">
+    <label>Temperature comfort</label>
+    <input id="temp" type="range" min="0" max="100" value="50">
+  </div>
+
+  <div class="card">
+    <h3>Breakdown</h3>
+    <table class="table">
+      <tr><th>Factor</th><th>Weight</th><th>Contribution</th></tr>
+      <tbody id="breakdown"></tbody>
+    </table>
+    <hr>
+    <button id="save">Save demo reading to Sheet</button>
+    <div id="status" class="small"></div>
+  </div>
+</div>
+<div class='footer'>© 2025 Tqind</div></div><script src='script.js'></script></body></html>
