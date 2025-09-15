@@ -1,80 +1,20 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tranquility Index — Welcome</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg:#0b0f14;--card:#121922;--muted:#7a8aa0;--text:#e6eef8;--accent:#66d9e8;--accent2:#90e0ef}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#0b0f14,#0e1520);color:var(--text)}
-    a{color:var(--accent2);text-decoration:none}
-    .container{max-width:1050px;margin:0 auto;padding:20px}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.3px}
-    .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(var(--accent),#1e2a3a);display:grid;place-items:center;font-size:14px}
-    .navlinks{display:flex;gap:14px;font-size:14px}
-    .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:#122033;border:1px solid #22354d;font-size:14px}
-    .hero{padding:30px 0 12px 0}
-    h1{font-size:36px;margin:0 0 8px 0}
-    .sub{color:var(--muted);font-size:15px}
-    .grid{display:grid;gap:16px}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:18px 0}
-    .card{background:var(--card);border:1px solid #1e2835;border-radius:18px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
-    .footer{margin:22px 0 40px 0;color:var(--muted);font-size:12px}
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="nav">
-      <div class="brand"><div class="logo">TI</div>Tranquility&nbsp;Index</div>
-      <div class="navlinks">
-        <a href="demo.html">Live demo</a>
-        <a href="legal.html">Legal</a>
-        <a class="btn" href="demo.html">Open Lyric Square</a>
-      </div>
-    </div>
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tqind</title><link rel="stylesheet" href="styles.css"></head><body><div class="container">
+<nav><div style="display:flex;align-items:center;gap:10px;">
+<img src="logo.png" alt="Tqind" style="height:36px;width:36px;border-radius:9999px;"><strong>Tqind</strong></div>
+<div><a href="index.html">Home</a><a href="signup.html">Sign up</a><a href="news.html">News</a><a href="data.html" class="cta">Share data</a></div></nav>
 
-    <section class="hero">
-      <h1>Real‑time comfort scores for public spaces</h1>
-      <p class="sub">Simple. Human. One number that tells you when and where to sit outside. Optimised for UK realities and Mediterranean dreams.</p>
-      <p style="margin-top:12px">
-        <a class="btn" href="demo.html">Try the Lyric Square demo</a>
-        &nbsp; <a href="https://github.com/danielstuart94/Tranquility" target="_blank">View on GitHub</a>
-      </p>
-    </section>
-
-    <section class="cards">
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">How it works</h3>
-        <div class="sub">Weather + wind + air + noise + sun/shade + busyness → comfort score 0–100. Rain is scaled by shelter.</div>
-      </div>
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Why it matters</h3>
-        <div class="sub">Better lunch breaks, smarter event timing, higher footfall. A small nudge to use communal spaces more.</div>
-      </div>
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">For partners</h3>
-        <div class="sub">Councils, BIDs, landlords: pilot per site, sponsor the QR page, access an API for dashboards.</div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Scan‑to‑use</h3>
-        <div class="sub">Place a QR in your square that opens the live score. Users can give one‑tap feedback.</div>
-      </div>
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Privacy first</h3>
-        <div class="sub">We collect only anonymous slider states and feedback with consent. No cookies beyond local settings.</div>
-        <p style="margin-top:8px"><a href="legal.html">Read privacy & terms</a></p>
-      </div>
-    </section>
-
-    <div class="footer">© 2025 Tranquility Index. Built for Lyric Square pilot. This site is a prototype and not advice.</div>
-  </div>
-</body>
-</html>
+<section class="hero">
+  <img class="logo" src="logo.png" alt="Tqind logo">
+  <h1>Step out. Feel more.</h1>
+  <p class="tagline">We bring people out to experience the world around them.</p>
+</section>
+<section class="grid">
+  <div class="card"><h3>Mission</h3><p>We help people discover the right moments and places to get outside and feel alive in the city.</p></div>
+  <div class="card"><h3>Tqind Pitch</h3><p>Tqind isn’t about rating parks. We learn what people want from outdoor urban spaces, then guide them to experiences that make them feel more.</p>
+    <a class="btn" href="Tqind_Pitch_Deck.pdf" target="_blank">Open pitch PDF</a></div>
+  <div class="card"><h3>Join the beta</h3><p>Get early alerts when tranquillity peaks near you.</p><a class="btn" href="signup.html">Sign up</a></div>
+</section>
+<footer>© 2025 Tqind · <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></footer></div>
+<script src="script.js"></script></body></html>
