@@ -33,7 +33,22 @@ svg{width:100%;height:220px;display:block}
 .toggleRow{display:flex;gap:10px;align-items:center}
 hr{border:0;border-top:1px solid #e5e7eb;margin:16px 0}
 .landing{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
-.landing .logo{width:96px;height:96px;border-radius:9999px;margin-bottom:16px}
+.landing .logo{width:72px;height:72px;border-radius:9999px;margin-bottom:16px}
 .landing h1{font-size:56px;line-height:1.05;margin:0}
 .landing p{color:var(--muted);font-size:18px;margin:8px 0 18px}
 .landing .enter{padding:12px 18px;border-radius:14px;background:var(--brand);color:#fff;font-weight:800;text-decoration:none}
+
+/* --- Mobile tweaks --- */
+@media (max-width: 640px) {
+  .container { padding: 16px; }
+  nav { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .brandRow { margin-bottom: 4px; }
+  .btn { width: 100%; text-align: center; margin-top: 8px; }
+  .grid { grid-template-columns: 1fr; gap: 14px; }
+  .twoCol { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 32px; }
+  .landing .logo { width: 64px; height: 64px; }
+  .landing h1 { font-size: 40px; }
+  svg { height: 160px; }
+  .badge { font-size: 22px; }
+}
