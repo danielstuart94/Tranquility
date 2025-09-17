@@ -3,9 +3,12 @@
 <title>Tqind — Lyric Square, Hammersmith</title><link rel="stylesheet" href="styles.css" /></head>
 <body data-location="Lyric Square, Hammersmith"><div class="container">
 <nav><div class="brandRow"><img src="logo.png" alt="Tqind" style="height:32px;width:32px;border-radius:9999px;" /><div class="brandName">Tqind</div></div><div><a class="btn" href="home.html">Back</a></div></nav>
-<section class="hero"><div class="badge" id="statusBadge"><span id="statusLabel">–</span> <span class="sub" id="statusScore"></span></div>
-<div class="guidance" id="guidanceText"></div><div class="chips" id="chipRow"></div>
-<p>Lyric Square, Hammersmith • hour‑by‑hour tranquillity (next 24h). Adjust assumptions and tell us if it’s accurate.</p></section>
+<section class="hero">
+  <div class="badge" id="statusBadge"><span id="statusLabel">–</span> <span class="sub" id="statusScore"></span></div>
+  <div class="guidance" id="guidanceText"></div>
+  <div class="chips" id="chipRow"></div>
+  <p>Lyric Square, Hammersmith • hour‑by‑hour tranquillity (next 24h). Predicted score remains fixed. Adjust assumptions below to compare.</p>
+</section>
 <div class="twoCol">
   <div class="card"><h3>24‑hour forecast</h3>
     <div class="chartWrap"><div class="yTicks"></div><svg id="chart" viewBox="0 0 1000 220" preserveAspectRatio="none">
@@ -14,8 +17,10 @@
     <div class="small">Evening adjustment is applied automatically after 19:00.</div>
     <details class="breakdown"><summary>See breakdown</summary><div id="breakdownRows" class="small"></div></details>
   </div>
+
   <div class="card" id="controls"><h3>Adjust assumptions</h3>
-    <div class="small">Move sliders to reflect current conditions. These are your inputs, not the score.</div>
+    <div class="small">These sliders represent your observed conditions. They do not change the predicted score above.</div>
+    <div class="miniBadge"><span id="userStatusLabel">Your adjusted:</span> <span class="sub" id="userStatusScore"></span></div>
     <label>Noise (lower is better)</label><input id="noise" type="range" min="0" max="100" value="60" />
 <label>Crowd density (lower is better)</label><input id="crowd" type="range" min="0" max="100" value="55" />
 <label>Shade / microclimate</label><input id="shade" type="range" min="0" max="100" value="30" />
@@ -30,69 +35,60 @@
   </div>
 </div>
 <footer>© 2025 Tqind</footer></div>
+
 <script>
 const WEIGHTS = { noise:0.28, crowd:0.18, shade:0.18, green:0.20, events:0.06, temp:0.10 };
 const clamp=(x,a=0,b=100)=>Math.max(a,Math.min(b,x));
 const factorToScore=(k,v)=>(k==='noise'||k==='crowd')?100-v:(k==='events'?clamp(100-Math.abs(v-30)*2):(k==='temp'?clamp(100-Math.abs(v-60)*1.2):v));
-const baseCurveForHour=(h)=>{const L=(h>=12&&h<=14)?1:0,P=(h>=17&&h<=19)?1:0,N=(h>=21||h<=6)?1:0;return {noise:60+10*L+6*P-8*N,crowd:55+15*L+8*P-12*N,shade:30,green:25,events:20,temp:50};};
-const eveningAuto=(v,h)=>{v={...v}; if(h>=19||h<=6){v.crowd=clamp(v.crowd-15); v.noise=clamp(v.noise-10);} return v;};
-const computeScore=(vals)=>Math.round(Object.keys(WEIGHTS).reduce((s,k)=>s+factorToScore(k,vals[k])*WEIGHTS[k],0));
 const statusFrom=(s)=> s>=75?['Great','great']: s>=60?['Good','good']: s>=45?['Fair','fair']:['Poor','poor'];
 const two=(h)=>('0'+h).slice(-2);
+const DEFAULTS = { noise:60, crowd:55, shade:30, green:25, events:20, temp:50 };
+function baseCurveForHour(h){
+  const L=(h>=12&&h<=14)?1:0, P=(h>=17&&h<=19)?1:0, N=(h>=21||h<=6)?1:0;
+  return { noise:DEFAULTS.noise+10*L+6*P-8*N, crowd:DEFAULTS.crowd+15*L+8*P-12*N, shade:DEFAULTS.shade, green:DEFAULTS.green, events:DEFAULTS.events, temp:DEFAULTS.temp };
+}
+function eveningAuto(v,h){ v={...v}; if(h>=19||h<=6){ v.crowd=clamp(v.crowd-15); v.noise=clamp(v.noise-10); } return v; }
+const computeScore=(vals)=>Math.round(Object.keys(WEIGHTS).reduce((s,k)=>s+factorToScore(k,vals[k])*WEIGHTS[k],0));
 function seedRand(seed){ let h=2166136261>>>0; for(let i=0;i<seed.length;i++){h^=seed.charCodeAt(i); h=(h*16777619)>>>0;} return ()=>{ h+=0x6D2B79F5; let t=Math.imul(h^h>>>15,1|h); t^=t+Math.imul(t^t>>>7,61|t); return ((t^t>>>14)>>>0)/4294967296; }; }
 const locSeed=(document.body.getAttribute("data-location")||"loc")+new Date().toISOString().slice(0,10);
 const rand=seedRand(locSeed);
 function setXTicks(container, hours){
   container.innerHTML='';
-  hours.forEach((d,i)=>{
-    const lab=document.createElement('div'); lab.className='tick';
-    lab.textContent = (i % 3 === 0) ? two(d.getHours()) : '';
-    container.appendChild(lab);
-  });
+  hours.forEach((d,i)=>{ const lab=document.createElement('div'); lab.className='tick'; lab.textContent = (i % 3 === 0) ? two(d.getHours()) : ''; container.appendChild(lab); });
 }
 function setYTicks(svgEl){
   const yWrap = svgEl.parentElement.querySelector('.yTicks');
   yWrap.innerHTML='';
-  [0,25,50,75,100].forEach(v=>{
-    const s=document.createElement('span');
-    s.style.top = (10 + (220-10-20)*(1 - v/100)) + 'px';
-    s.textContent=v; yWrap.appendChild(s);
-  });
+  [0,25,50,75,100].forEach(v=>{ const s=document.createElement('span'); s.textContent=v; s.style.top = (10 + (220-10-20)*(1 - v/100)) + 'px'; yWrap.appendChild(s); });
 }
-function updateMeta(score, vals){
-  document.getElementById('guidanceText').textContent = guidanceFrom(score, vals);
-  const row = document.getElementById('chipRow'); row.innerHTML='';
-  keywordsFrom(vals).forEach(t=>{ const c=document.createElement('span'); c.className='chip'; c.textContent=t; row.appendChild(c); });
-}
-function updateBreakdown(vals){
+function updateBreakdown(pred, user){
   const el = document.getElementById('breakdownRows');
-  const parts = [
-    ['Noise', 100-vals.noise],
-    ['Crowd', 100-vals.crowd],
-    ['Shade', vals.shade],
-    ['Greenery', vals.green],
-    ['Events', (100-Math.abs(vals.events-30)*2)],
-    ['Thermal comfort', (100-Math.abs(vals.temp-60)*1.2)]
-  ];
-  el.innerHTML = parts.map(([k,v])=> `${k}: ${Math.max(0,Math.min(100,Math.round(v)))} / 100`).join('<br>');
-}
-function renderPage(){
-  const vals={ noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, events:+events.value, temp:+temp.value };
-  const hours=(function(){const now=new Date(),a=[]; for(let i=0;i<24;i++) a.push(new Date(now.getTime()+i*3600*1000)); return a;})();
-  const pts=[]; let nowScore=0; const labels=document.getElementById('chartLabels'); labels.innerHTML='';
-  hours.forEach((d,i)=>{
-    const hr=d.getHours(); const base=baseCurveForHour(hr); const mix={}; for(const k in base) mix[k]=Math.round(base[k]*0.3 + vals[k]*0.7);
-    const adj=eveningAuto(mix,hr); let score=computeScore(adj); score = Math.max(0, Math.min(100, Math.round(score + (rand()-0.5)*5)));
-    if(i===0) nowScore=score; pts.push((30 + (i*(1000-30-10)/23))+','+(10 + (220-10-20)*(1 - score/100)));
+  const parts = ['noise','crowd','shade','green','events','temp'].map(k=>{
+    const predVal = k==='noise'||k==='crowd' ? 100-pred[k] : (k==='events'? clamp(100-Math.abs(pred[k]-30)*2) : (k==='temp'? clamp(100-Math.abs(pred[k]-60)*1.2): pred[k]));
+    const userVal = k==='noise'||k==='crowd' ? 100-user[k] : (k==='events'? clamp(100-Math.abs(user[k]-30)*2) : (k==='temp'? clamp(100-Math.abs(user[k]-60)*1.2): user[k]));
+    const name = {noise:'Noise',crowd:'Crowd',shade:'Shade',green:'Greenery',events:'Events',temp:'Thermal comfort'}[k];
+    return name + " — Predicted: " + Math.round(predVal) + " / 100 • Yours: " + Math.round(userVal) + " / 100";
   });
-  document.getElementById('line').setAttribute('points', pts.join(' '));
-  setXTicks(labels, hours); setYTicks(document.getElementById('chart'));
-  const [label, cls]=statusFrom(nowScore); const badge=document.getElementById('statusBadge'); badge.className='badge '+cls;
-  document.getElementById('statusLabel').textContent=label; document.getElementById('statusScore').textContent=nowScore+' / 100';
-  updateMeta(nowScore, vals); updateBreakdown(vals);
+  el.innerHTML = parts.join('<br>');
 }
-['noise','crowd','shade','green','events','temp'].forEach(id=>document.getElementById(id).addEventListener('input',renderPage));
-renderPage();
+function renderAll(){
+  const now = new Date(); const hr = now.getHours();
+  const baseNow = eveningAuto(baseCurveForHour(hr), hr);
+  let predScore = computeScore(baseNow);
+  predScore = Math.max(0, Math.min(100, Math.round(predScore + (rand()-0.5)*5)));
+  const hours = Array.from(Array(24), (_,i)=> new Date(now.getTime()+i*3600*1000));
+  const pts=[]; hours.forEach((d,i)=>{ const b = eveningAuto(baseCurveForHour(d.getHours()), d.getHours()); let s = computeScore(b); s = Math.max(0, Math.min(100, Math.round(s + (rand()-0.5)*5))); const x = (30 + (i*(1000-30-10)/23)), y = (10 + (220-10-20)*(1 - s/100)); pts.push(x+','+y); });
+  document.getElementById('line').setAttribute('points', pts.join(' ')); setXTicks(document.getElementById('chartLabels'), hours); setYTicks(document.getElementById('chart'));
+  const st = statusFrom(predScore); const badge=document.getElementById('statusBadge'); badge.className='badge '+st[1]; document.getElementById('statusLabel').textContent=st[0]; document.getElementById('statusScore').textContent=predScore+' / 100';
+  document.getElementById('guidanceText').textContent = guidanceFrom(predScore, baseNow);
+  const row = document.getElementById('chipRow'); row.innerHTML=''; keywordsFrom(baseNow).forEach(t=>{ const c=document.createElement('span'); c.className='chip'; c.textContent=t; row.appendChild(c); });
+  const userVals = { noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, events:+events.value, temp:+temp.value };
+  const userScore = computeScore(userVals); const ust = statusFrom(userScore);
+  document.getElementById('userStatusLabel').textContent = ust[0]; document.getElementById('userStatusScore').textContent = Math.round(userScore)+' / 100';
+  updateBreakdown(baseNow, userVals);
+}
+['noise','crowd','shade','green','events','temp'].forEach(id=>document.addEventListener('input', (e)=>{ if(e.target && e.target.id===id) renderAll(); }));
+renderAll();
 </script>
 <script src="script.js"></script>
 </body></html>

@@ -2,48 +2,59 @@
 :root { --brand:#2D8A7A; --accent:#0F3D37; --text:#111827; --muted:#6b7280; --bg:#ffffff;
         --good:#059669; --fair:#f59e0b; --poor:#ef4444; --great:#2563eb; }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg)}
+html,body{margin:0;padding:0;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;background:#fff}
 .container{max-width:1100px;margin:0 auto;padding:24px}
 nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:8px}
 .brandRow{display:flex;align-items:center;gap:10px}
 .brandName{font-weight:800}
 .hero{padding:18px 0 8px;text-align:center}
 .hero h1{margin:6px 0 4px;font-size:40px;line-height:1.1}
-.hero p{color:var(--muted);margin:0}
+.hero p{color:#6b7280;margin:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:18px}
 .card{border:1px solid #e5e7eb;border-radius:16px;padding:18px;background:#fafafa}
 .card h3{margin:0 0 10px}
 label{display:block;margin:10px 0 6px;font-weight:600}
 input[type=email],input[type=text],textarea,select{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px}
 textarea{min-height:110px;resize:vertical}
-button,.btn{background:var(--brand);color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
-.small{color:var(--muted);font-size:13px}
-footer{padding:24px 0;color:var(--muted);text-align:center}
+button,.btn{background:#2D8A7A;color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+.small{color:#6b7280;font-size:13px}
+footer{padding:24px 0;color:#6b7280;text-align:center}
+
+/* Chart */
 .chartWrap{border:1px solid #e5e7eb;border-radius:12px;background:#fff;padding:10px;position:relative}
 svg{width:100%;height:220px;display:block}
 .gridCols{display:grid;grid-template-columns:repeat(24,1fr);gap:0}
-.tick{font-size:11px;color:var(--muted);text-align:center;margin-top:4px}
+.tick{font-size:11px;color:#6b7280;text-align:center;margin-top:4px}
+.yTicks{position:absolute;left:0;top:0;bottom:0;width:0}
+.yTicks span{position:absolute;left:-6px;transform:translate(-100%, -50%);font-size:11px;color:#6b7280}
+
+/* Badges */
 .badge{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:14px;font-weight:800;font-size:28px;margin:6px 0 2px 0}
-.badge .sub{font-weight:600;font-size:14px;color:var(--muted)}
-.badge.poor{background:#fee2e2;color:var(--poor)}
-.badge.fair{background:#fef3c7;color:var(--fair)}
-.badge.good{background:#dcfce7;color:var(--good)}
-.badge.great{background:#dbeafe;color:var(--great)}
-.twoCol{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:18px}
-.toggleRow{display:flex;gap:10px;align-items:center}
-hr{border:0;border-top:1px solid #e5e7eb;margin:16px 0}
-.landing{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
-.landing .logo{width:72px;height:72px;border-radius:9999px;margin-bottom:16px}
-.landing h1{font-size:48px;line-height:1.05;margin:0}
-.landing p{color:var(--muted);font-size:18px;margin:8px 0 18px}
-.landing .enter{padding:12px 18px;border-radius:14px;background:var(--brand);color:#fff;font-weight:800;text-decoration:none}
+.badge .sub{font-weight:600;font-size:14px;color:#6b7280}
+.badge.poor{background:#fee2e2;color:#ef4444}
+.badge.fair{background:#fef3c7;color:#f59e0b}
+.badge.good{background:#dcfce7;color:#059669}
+.badge.great{background:#dbeafe;color:#2563eb}
+.miniBadge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:12px;font-weight:700;font-size:16px;margin:6px 0;background:#eef2f7;color:#374151}
+.miniBadge .sub{font-size:12px;color:#6b7280}
+
+/* Extras */
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0;justify-content:center}
 .chip{background:#eef2f7;border:1px solid #e5e7eb;color:#374151;padding:4px 8px;border-radius:9999px;font-size:12px}
 .guidance{margin-top:6px;color:#374151;font-weight:600}
 details.breakdown{margin-top:10px;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:10px}
 details.breakdown summary{cursor:pointer;font-weight:700}
-.yTicks{position:absolute;left:0;top:0;bottom:0;width:0}
-.yTicks span{position:absolute;left:-6px;transform:translate(-100%, -50%);font-size:11px;color:#6b7280}
+
+/* Landing */
+.landing{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
+.landing .logo{width:72px;height:72px;border-radius:9999px;margin-bottom:16px}
+.landing h1{font-size:48px;line-height:1.05;margin:0}
+.landing p{color:#6b7280;font-size:18px;margin:8px 0 18px}
+.landing .enter{padding:12px 18px;border-radius:14px;background:#2D8A7A;color:#fff;font-weight:800;text-decoration:none}
+
+/* Layout */
+.twoCol{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:18px}
+
 @media (max-width: 640px){
   .container{padding:16px}
   nav{flex-direction:column;align-items:flex-start}
