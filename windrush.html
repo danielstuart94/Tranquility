@@ -1,12 +1,13 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Tqind — Windrush Square, Brixton</title><link rel="stylesheet" href="styles.css" /></head>
-<body data-location="Windrush Square, Brixton"><div class="container">
+<body data-location="Windrush Square, Brixton, London" data-rain="false" data-aq="60"><div class="container">
 <nav><div class="brandRow"><img src="logo.png" alt="Tqind" style="height:32px;width:32px;border-radius:9999px;" /><div class="brandName">Tqind</div></div><div><a class="btn" href="home.html">Back</a></div></nav>
 <section class="hero">
   <div class="badge" id="statusBadge"><span id="statusLabel">–</span> <span class="sub" id="statusScore"></span></div>
   <div class="guidance" id="guidanceText">Checking conditions…</div>
   <div class="chips" id="chipRow"></div>
+  <a class="maplink" target="_blank" href="https://www.google.com/maps/search/?api=1&query=Windrush%20Square%2C%20Brixton%2C%20London">View on Google Maps</a>
   <p>Windrush Square, Brixton • hour‑by‑hour tranquillity (next 24h). Predicted score remains fixed. Adjust assumptions below to compare.</p>
 </section>
 <div class="twoCol">
@@ -24,6 +25,10 @@
       <summary>See breakdown</summary>
       <div id="breakdownRows" class="small"></div>
     </details>
+    <details id="assumptionsData">
+      <summary>See assumptions used</summary>
+      <div class="small" id="assumptionRows"></div>
+    </details>
   </div>
 
   <div class="card" id="controls">
@@ -32,8 +37,8 @@
     <details id="assumptions" open>
       <summary>Adjust assumptions</summary>
       <div class="small">These sliders are inputs, not the predicted score.</div>
-      <label>Noise (lower is better)</label><input id="noise" type="range" min="0" max="100" value="55" />
-<label>Crowd density (lower is better)</label><input id="crowd" type="range" min="0" max="100" value="60" />
+      <label>Noise (dB proxy, lower is better)</label><input id="noise" type="range" min="0" max="100" value="55" />
+<label>Crowd density</label><input id="crowd" type="range" min="0" max="100" value="60" />
 <label>Shade / microclimate</label><input id="shade" type="range" min="0" max="100" value="35" />
 <label>Greenery / planting</label><input id="green" type="range" min="0" max="100" value="35" />
 <label>Events / activation impact</label><input id="events" type="range" min="0" max="100" value="30" />
@@ -60,14 +65,22 @@ const two=(h)=>('0'+h).slice(-2);
 function seedRand(seed){let h=2166136261>>>0;for(let i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=(h*16777619)>>>0;}return ()=>{h+=0x6D2B79F5;let t=Math.imul(h^h>>>15,1|h);t^=t+Math.imul(t^t>>>7,61|t);return ((t^t>>>14)>>>0)/4294967296;};}
 const locSeed=(document.body.getAttribute("data-location")||"loc")+new Date().toISOString().slice(0,10);
 const rand=seedRand(locSeed);
-function baseDefaults(){ return { noise:+document.getElementById('noise').value, crowd:+document.getElementById('crowd').value, shade:+document.getElementById('shade').value, green:+document.getElementById('green').value, events:+document.getElementById('events').value, temp:+document.getElementById('temp').value };}
-function baseHour(h, d){ const L=(h>=12&&h<=14)?1:0, P=(h>=17&&h<=19)?1:0, N=(h>=21||h<=6)?1:0; return { noise:d.noise+10*L+6*P-8*N, crowd:d.crowd+15*L+8*P-12*N, shade:d.shade, green:d.green, events:d.events, temp:d.temp };}
+const RAIN = (document.body.getAttribute('data-rain')==='true');
+const AQ = parseInt(document.body.getAttribute('data-aq')||'50',10);
+const DEFAULTS = { noise:+document.getElementById('noise').value, crowd:+document.getElementById('crowd').value, shade:+document.getElementById('shade').value, green:+document.getElementById('green').value, events:+document.getElementById('events').value, temp:+document.getElementById('temp').value };
+function baseHour(h){ const L=(h>=12&&h<=14)?1:0, P=(h>=17&&h<=19)?1:0, N=(h>=21||h<=6)?1:0; return { noise:DEFAULTS.noise+10*L+6*P-8*N, crowd:DEFAULTS.crowd+15*L+8*P-12*N, shade:DEFAULTS.shade, green:DEFAULTS.green, events:DEFAULTS.events, temp:DEFAULTS.temp };}
 function eveningAuto(v,h){ v={...v}; if(h>=19||h<=6){ v.crowd=clamp(v.crowd-15); v.noise=clamp(v.noise-10); } return v; }
+const now = new Date(); const hr = now.getHours(); const predNow = eveningAuto(baseHour(hr), hr);
+let predictedScore = compute(predNow); predictedScore = Math.max(0,Math.min(100,Math.round(predictedScore + (rand()-0.5)*5)));
 function ticksX(el, hours){ el.innerHTML=''; hours.forEach((d,i)=>{ const t=document.createElement('div'); t.className='tick'; t.textContent=(i%3===0)?two(d.getHours()):''; el.appendChild(t); }); }
 function ticksY(svg){ const wrap=svg.parentElement.querySelector('.yTicks'); wrap.innerHTML=''; [0,25,50,75,100].forEach(v=>{ const s=document.createElement('span'); s.textContent=v; s.style.top=(10+(220-10-20)*(1-v/100))+'px'; wrap.appendChild(s); }); }
-function updateBreakdown(pred,user){ const rows=[ ['Noise', f2s('noise',pred.noise), f2s('noise',user.noise)], ['Crowd', f2s('crowd',pred.crowd), f2s('crowd',user.crowd)], ['Shade', f2s('shade',pred.shade), f2s('shade',user.shade)], ['Greenery', f2s('green',pred.green), f2s('green',user.green)], ['Events', f2s('events',pred.events), f2s('events',user.events)], ['Thermal comfort', f2s('temp',pred.temp), f2s('temp',user.temp)], ]; document.getElementById('breakdownRows').innerHTML = rows.map(([k,p,u])=>`${k} — Predicted: ${Math.round(p)} / 100 • Yours: ${Math.round(u)} / 100`).join('<br>');}
-function render(){ const now=new Date(), hr=now.getHours(); const d0=baseDefaults(); const predNow = eveningAuto(baseHour(hr,d0), hr); let predScore = compute(predNow); predScore = Math.max(0,Math.min(100,Math.round(predScore + (rand()-0.5)*5))); const hours=Array.from({length:24},(_,i)=>new Date(now.getTime()+i*3600*1000)); const pts=hours.map((d,i)=>{ const h=d.getHours(); let s=compute(eveningAuto(baseHour(h,d0),h)); s=Math.max(0,Math.min(100,Math.round(s+(rand()-0.5)*5))); const x=30+(i*(1000-30-10)/23); const y=10+(220-10-20)*(1-s/100); return x+','+y;}); document.getElementById('line').setAttribute('points', pts.join(' ')); ticksX(document.getElementById('chartLabels'), hours); ticksY(document.getElementById('chart')); const [lab,cls]=status(predScore); const badge=document.getElementById('statusBadge'); badge.className='badge '+cls; document.getElementById('statusLabel').textContent=lab; document.getElementById('statusScore').textContent=predScore+' / 100'; document.getElementById('guidanceText').textContent = guidanceFrom(predScore, predNow); const row=document.getElementById('chipRow'); row.innerHTML=''; keywordsFrom(predNow).forEach(t=>{const c=document.createElement('span'); c.className='chip'; c.textContent=t; row.appendChild(c);}); const userVals={ noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, events:+events.value, temp:+temp.value }; const uScore=compute(userVals); const [ul]=status(uScore); document.getElementById('userStatusLabel').textContent=ul; document.getElementById('userStatusScore').textContent=Math.round(uScore)+' / 100'; updateBreakdown(predNow, userVals); }
-['noise','crowd','shade','green','events','temp'].forEach(id=>document.getElementById(id).addEventListener('input', render)); render();
+function updateAssumptionTable(){ const dB = Math.round(50 + (DEFAULTS.noise-50)*0.6); const crowd = Math.round(DEFAULTS.crowd); const shade = Math.round(DEFAULTS.shade); const green = Math.round(DEFAULTS.green); const tempC = Math.round((DEFAULTS.temp-50)/2 + 20); const aq = AQ; const rows = ["Noise level: ~"+dB+" dB (proxy)","Crowd density index: "+crowd+" / 100","Shade / microclimate: "+shade+" / 100","Greenery: "+green+" / 100","Events impact: "+Math.round(DEFAULTS.events)+" / 100","Temperature comfort proxy: "+DEFAULTS.temp+" → ≈ "+tempC+"°C","Air quality index: "+aq+" / 100"]; document.getElementById('assumptionRows').innerHTML = rows.join("<br>"); }
+function updateBreakdown(userVals){ const pred = predNow; const parts = ['noise','crowd','shade','green','events','temp'].map(k=>{ const predVal=f2s(k,pred[k]); const userVal=f2s(k,userVals[k]); const name={noise:'Noise',crowd:'Crowd',shade:'Shade',green:'Greenery',events:'Events',temp:'Thermal comfort'}[k]; return name+" — Predicted: "+Math.round(predVal)+" / 100 • Yours: "+Math.round(userVal)+" / 100";}); document.getElementById('breakdownRows').innerHTML = parts.join('<br>'); }
+function oneLineTop(){ const txt = (function(vals){ const bits=[]; if(RAIN) bits.push("rain expected"); if(AQ>=70) bits.push("low air quality"); if((100-vals.noise)<50) bits.push("noisy"); if(vals.shade<40) bits.push("exposed"); if(vals.temp>70) bits.push("warm"); if(vals.temp<45) bits.push("cool"); const advice = (vals.shade < 40) ? "seek shade" : ((100-vals.noise)<50 ? "find a quieter spot" : "enjoy it"); return (bits.length? bits.join(", ")+". " : "") + advice + "."; })(predNow); const g=document.getElementById('guidanceText'); g.textContent = txt.charAt(0).toUpperCase()+txt.slice(1); }
+function renderOncePredicted(){ const cls = (predictedScore>=75)?'great':(predictedScore>=60)?'good':(predictedScore>=45)?'fair':'poor'; const lab = cls==='great'?'Great':cls==='good'?'Good':cls==='fair'?'Fair':'Poor'; const badge=document.getElementById('statusBadge'); badge.className='badge '+cls; document.getElementById('statusLabel').textContent=lab; document.getElementById('statusScore').textContent=predictedScore+' / 100'; const row=document.getElementById('chipRow'); row.innerHTML=''; keywordsFrom(predNow).forEach(t=>{const c=document.createElement('span'); c.className='chip'; c.textContent=t; row.appendChild(c);}); const hours=Array.from({length:24},(_,i)=>new Date(now.getTime()+i*3600*1000)); const pts=hours.map((d,i)=>{ const h=d.getHours(); let s=compute(eveningAuto(baseHour(h),h)); s=Math.max(0,Math.min(100,Math.round(s+(rand()-0.5)*5))); const x=30+(i*(1000-30-10)/23); const y=10+(220-10-20)*(1-s/100); return x+','+y;}); document.getElementById('line').setAttribute('points', pts.join(' ')); ticksX(document.getElementById('chartLabels'), hours); ticksY(document.getElementById('chart')); oneLineTop(); updateAssumptionTable(); }
+function updateAdjusted(){ const userVals={ noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, events:+events.value, temp:+temp.value }; const uScore=compute(userVals); const cls=(uScore>=75)?'great':(uScore>=60)?'good':(uScore>=45)?'fair':'poor'; const lab=cls==='great'?'Great':cls==='good'?'Good':cls==='fair'?'Fair':'Poor'; document.getElementById('userStatusLabel').textContent=lab; document.getElementById('userStatusScore').textContent=Math.round(uScore)+' / 100'; updateBreakdown(userVals); }
+['noise','crowd','shade','green','events','temp'].forEach(id=>document.getElementById(id).addEventListener('input', updateAdjusted));
+renderOncePredicted(); updateAdjusted();
 </script>
 <script src="script.js"></script>
 
