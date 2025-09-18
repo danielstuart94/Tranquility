@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Tqind — Brockwell Lido</title><link rel="stylesheet" href="styles.css" /></head>
-<body data-location="Brockwell Lido, London" data-rain="true" data-aq="40"><div class="container">
+<body data-location="Brockwell Lido, London" data-rain="true" data-aq="40" data-amenities="75"><div class="container">
 <nav><div class="brandRow"><img src="logo.png" alt="Tqind" style="height:32px;width:32px;border-radius:9999px;" /><div class="brandName">Tqind</div></div><div><a class="btn" href="home.html">Back</a></div></nav>
 <section class="hero">
   <div class="badge" id="statusBadge"><span id="statusLabel">–</span> <span class="sub" id="statusScore"></span></div>
@@ -25,7 +25,7 @@
       <summary>See breakdown</summary>
       <div id="breakdownRows" class="small"></div>
     </details>
-    <details id="assumptionsData">
+    <details id="assumptionsData" open>
       <summary>See assumptions used</summary>
       <div class="small" id="assumptionRows"></div>
     </details>
@@ -41,7 +41,6 @@
 <label>Crowd density</label><input id="crowd" type="range" min="0" max="100" value="50" />
 <label>Shade / microclimate</label><input id="shade" type="range" min="0" max="100" value="40" />
 <label>Greenery / planting</label><input id="green" type="range" min="0" max="100" value="70" />
-<label>Events / activation impact</label><input id="events" type="range" min="0" max="100" value="15" />
 <label>Temperature comfort</label><input id="temp" type="range" min="0" max="100" value="60" />
     </details>
     <hr />
@@ -56,31 +55,34 @@
 <footer>© 2025 Tqind</footer></div>
 
 <script>
-const WEIGHTS = { noise:0.28, crowd:0.18, shade:0.18, green:0.20, events:0.06, temp:0.10 };
+const WEIGHTS = { noise:0.22, crowd:0.14, shade:0.14, green:0.16, temp:0.12, aq:0.12, amenities:0.10 };
 const clamp=(x,a=0,b=100)=>Math.max(a,Math.min(b,x));
-const f2s=(k,v)=> (k==='noise'||k==='crowd')?100-v:(k==='events'?clamp(100-Math.abs(v-30)*2):(k==='temp'?clamp(100-Math.abs(v-60)*1.2):v));
-const compute=(vals)=>Math.round(Object.entries(WEIGHTS).reduce((s,[k,w])=>s+f2s(k,vals[k])*w,0));
-const status=(s)=> s>=75?['Great','great']:s>=60?['Good','good']:s>=45?['Fair','fair']:['Poor','poor'];
+function f2s(key,val){ if(key==='noise'||key==='crowd') return 100 - val; if(key==='temp') return clamp(100 - Math.abs(val-60)*1.2); if(key==='aq') return clamp(100 - val); return val; }
+const compute=(v)=>Math.round( WEIGHTS.noise*f2s('noise',v.noise)+WEIGHTS.crowd*f2s('crowd',v.crowd)+WEIGHTS.shade*f2s('shade',v.shade)+WEIGHTS.green*f2s('green',v.green)+WEIGHTS.temp*f2s('temp',v.temp)+WEIGHTS.aq*f2s('aq',v.aq)+WEIGHTS.amenities*f2s('amenities',v.amenities) );
+const bucket=(s)=> s>=75?['Great','great']: s>=60?['Good','good']: s>=45?['Fair','fair']:['Poor','poor'];
 const two=(h)=>('0'+h).slice(-2);
 function seedRand(seed){let h=2166136261>>>0;for(let i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=(h*16777619)>>>0;}return ()=>{h+=0x6D2B79F5;let t=Math.imul(h^h>>>15,1|h);t^=t+Math.imul(t^t>>>7,61|t);return ((t^t>>>14)>>>0)/4294967296;};}
 const locSeed=(document.body.getAttribute("data-location")||"loc")+new Date().toISOString().slice(0,10);
 const rand=seedRand(locSeed);
 const RAIN = (document.body.getAttribute('data-rain')==='true');
 const AQ = parseInt(document.body.getAttribute('data-aq')||'50',10);
-const DEFAULTS = { noise:+document.getElementById('noise').value, crowd:+document.getElementById('crowd').value, shade:+document.getElementById('shade').value, green:+document.getElementById('green').value, events:+document.getElementById('events').value, temp:+document.getElementById('temp').value };
-function baseHour(h){ const L=(h>=12&&h<=14)?1:0, P=(h>=17&&h<=19)?1:0, N=(h>=21||h<=6)?1:0; return { noise:DEFAULTS.noise+10*L+6*P-8*N, crowd:DEFAULTS.crowd+15*L+8*P-12*N, shade:DEFAULTS.shade, green:DEFAULTS.green, events:DEFAULTS.events, temp:DEFAULTS.temp };}
+const AMEN = parseInt(document.body.getAttribute('data-amenities')||'50',10);
+const DEFAULTS = { noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, temp:+temp.value, aq:AQ, amenities:AMEN };
+function baseHour(h){ const L=(h>=12&&h<=14)?1:0, P=(h>=17&&h<=19)?1:0, N=(h>=21||h<=6)?1:0; return { noise:DEFAULTS.noise+10*L+6*P-8*N, crowd:DEFAULTS.crowd+15*L+8*P-12*N, shade:DEFAULTS.shade, green:DEFAULTS.green, temp:DEFAULTS.temp, aq:DEFAULTS.aq, amenities:DEFAULTS.amenities };}
 function eveningAuto(v,h){ v={...v}; if(h>=19||h<=6){ v.crowd=clamp(v.crowd-15); v.noise=clamp(v.noise-10); } return v; }
-const now = new Date(); const hr = now.getHours(); const predNow = eveningAuto(baseHour(hr), hr);
-let predictedScore = compute(predNow); predictedScore = Math.max(0,Math.min(100,Math.round(predictedScore + (rand()-0.5)*5)));
-function ticksX(el, hours){ el.innerHTML=''; hours.forEach((d,i)=>{ const t=document.createElement('div'); t.className='tick'; t.textContent=(i%3===0)?two(d.getHours()):''; el.appendChild(t); }); }
-function ticksY(svg){ const wrap=svg.parentElement.querySelector('.yTicks'); wrap.innerHTML=''; [0,25,50,75,100].forEach(v=>{ const s=document.createElement('span'); s.textContent=v; s.style.top=(10+(220-10-20)*(1-v/100))+'px'; wrap.appendChild(s); }); }
-function updateAssumptionTable(){ const dB = Math.round(50 + (DEFAULTS.noise-50)*0.6); const crowd = Math.round(DEFAULTS.crowd); const shade = Math.round(DEFAULTS.shade); const green = Math.round(DEFAULTS.green); const tempC = Math.round((DEFAULTS.temp-50)/2 + 20); const aq = AQ; const rows = ["Noise level: ~"+dB+" dB (proxy)","Crowd density index: "+crowd+" / 100","Shade / microclimate: "+shade+" / 100","Greenery: "+green+" / 100","Events impact: "+Math.round(DEFAULTS.events)+" / 100","Temperature comfort proxy: "+DEFAULTS.temp+" → ≈ "+tempC+"°C","Air quality index: "+aq+" / 100"]; document.getElementById('assumptionRows').innerHTML = rows.join("<br>"); }
-function updateBreakdown(userVals){ const pred = predNow; const parts = ['noise','crowd','shade','green','events','temp'].map(k=>{ const predVal=f2s(k,pred[k]); const userVal=f2s(k,userVals[k]); const name={noise:'Noise',crowd:'Crowd',shade:'Shade',green:'Greenery',events:'Events',temp:'Thermal comfort'}[k]; return name+" — Predicted: "+Math.round(predVal)+" / 100 • Yours: "+Math.round(userVal)+" / 100";}); document.getElementById('breakdownRows').innerHTML = parts.join('<br>'); }
-function oneLineTop(){ const txt = (function(vals){ const bits=[]; if(RAIN) bits.push("rain expected"); if(AQ>=70) bits.push("low air quality"); if((100-vals.noise)<50) bits.push("noisy"); if(vals.shade<40) bits.push("exposed"); if(vals.temp>70) bits.push("warm"); if(vals.temp<45) bits.push("cool"); const advice = (vals.shade < 40) ? "seek shade" : ((100-vals.noise)<50 ? "find a quieter spot" : "enjoy it"); return (bits.length? bits.join(", ")+". " : "") + advice + "."; })(predNow); const g=document.getElementById('guidanceText'); g.textContent = txt.charAt(0).toUpperCase()+txt.slice(1); }
-function renderOncePredicted(){ const cls = (predictedScore>=75)?'great':(predictedScore>=60)?'good':(predictedScore>=45)?'fair':'poor'; const lab = cls==='great'?'Great':cls==='good'?'Good':cls==='fair'?'Fair':'Poor'; const badge=document.getElementById('statusBadge'); badge.className='badge '+cls; document.getElementById('statusLabel').textContent=lab; document.getElementById('statusScore').textContent=predictedScore+' / 100'; const row=document.getElementById('chipRow'); row.innerHTML=''; keywordsFrom(predNow).forEach(t=>{const c=document.createElement('span'); c.className='chip'; c.textContent=t; row.appendChild(c);}); const hours=Array.from({length:24},(_,i)=>new Date(now.getTime()+i*3600*1000)); const pts=hours.map((d,i)=>{ const h=d.getHours(); let s=compute(eveningAuto(baseHour(h),h)); s=Math.max(0,Math.min(100,Math.round(s+(rand()-0.5)*5))); const x=30+(i*(1000-30-10)/23); const y=10+(220-10-20)*(1-s/100); return x+','+y;}); document.getElementById('line').setAttribute('points', pts.join(' ')); ticksX(document.getElementById('chartLabels'), hours); ticksY(document.getElementById('chart')); oneLineTop(); updateAssumptionTable(); }
-function updateAdjusted(){ const userVals={ noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, events:+events.value, temp:+temp.value }; const uScore=compute(userVals); const cls=(uScore>=75)?'great':(uScore>=60)?'good':(uScore>=45)?'fair':'poor'; const lab=cls==='great'?'Great':cls==='good'?'Good':cls==='fair'?'Fair':'Poor'; document.getElementById('userStatusLabel').textContent=lab; document.getElementById('userStatusScore').textContent=Math.round(uScore)+' / 100'; updateBreakdown(userVals); }
-['noise','crowd','shade','green','events','temp'].forEach(id=>document.getElementById(id).addEventListener('input', updateAdjusted));
-renderOncePredicted(); updateAdjusted();
+const now=new Date(); const hr=now.getHours(); const predNow=eveningAuto(baseHour(hr),hr); const predictedScore=compute(predNow);
+function yTicks(svg){ const wrap=svg.parentElement.querySelector('.yTicks'); wrap.innerHTML=''; [0,25,50,75,100].forEach(v=>{ const s=document.createElement('span'); s.textContent=v; s.style.top=(10+(220-10-20)*(1-v/100))+'px'; wrap.appendChild(s); }); }
+function xTicks(el,hours){ el.innerHTML=''; hours.forEach((d,i)=>{ const t=document.createElement('div'); t.className='tick'; t.textContent=(i%3===0)?two(d.getHours()):''; el.appendChild(t); }); }
+function dB(n){ return Math.round(50 + (n-50)*0.6); }
+function tempC(t){ return Math.round((t-50)/2 + 20); }
+function fillAssumptions(){ const rows=[ "Noise level: ≈ "+dB(predNow.noise)+" dB (proxy)", "Air quality index: "+predNow.aq+" / 100", "Crowd density index: "+Math.round(predNow.crowd)+" / 100", "Shade / microclimate: "+Math.round(predNow.shade)+" / 100", "Greenery: "+Math.round(predNow.green)+" / 100", "Thermal comfort proxy: "+predNow.temp+" → ≈ "+tempC(predNow.temp)+"°C", "Amenities (seating, cover, water): "+Math.round(predNow.amenities)+" / 100" ]; document.getElementById('assumptionRows').innerHTML = rows.join("<br>"); }
+function fillBreakdown(user){ const items=[ ['Noise', f2s('noise',predNow.noise), f2s('noise',user.noise), "≈ "+dB(predNow.noise)+" dB", "≈ "+dB(user.noise)+" dB"], ['Air quality', f2s('aq',predNow.aq), f2s('aq',user.aq), predNow.aq+"/100", user.aq+"/100"], ['Crowd', f2s('crowd',predNow.crowd), f2s('crowd',user.crowd), predNow.crowd+"/100", user.crowd+"/100"], ['Shade', f2s('shade',predNow.shade), f2s('shade',user.shade), predNow.shade+"/100", user.shade+"/100"], ['Greenery', f2s('green',predNow.green), f2s('green',user.green), predNow.green+"/100", user.green+"/100"], ['Thermal comfort', f2s('temp',predNow.temp), f2s('temp',user.temp), "≈ "+tempC(predNow.temp)+"°C", "≈ "+tempC(user.temp)+"°C"], ['Amenities', f2s('amenities',predNow.amenities), f2s('amenities',user.amenities), predNow.amenities+"/100", user.amenities+"/100"] ]; document.getElementById('breakdownRows').innerHTML = items.map(([k,p,u,ph,uh])=>`${k} — Predicted: ${Math.round(p)} / 100 (${ph}) • Yours: ${Math.round(u)} / 100 (${uh})`).join("<br>"); }
+function oneLineTop(){ const txt = oneLineGuidance(predNow, RAIN, predNow.aq); document.getElementById('guidanceText').textContent = txt.charAt(0).toUpperCase()+txt.slice(1); }
+function drawChartOnce(){ const hours=Array.from({length:24},(_,i)=>new Date(now.getTime()+i*3600*1000)); const pts=hours.map((d,i)=>{ const h=d.getHours(); const s=compute(eveningAuto(baseHour(h),h)); const x=30+(i*(1000-30-10)/23); const y=10+(220-10-20)*(1-s/100); return x+','+y; }); document.getElementById('line').setAttribute('points', pts.join(' ')); xTicks(document.getElementById('chartLabels'), hours); yTicks(document.getElementById('chart')); }
+function renderPredicted(){ const [lab,cls]=bucket(predictedScore); const badge=document.getElementById('statusBadge'); badge.className='badge '+cls; document.getElementById('statusLabel').textContent=lab; document.getElementById('statusScore').textContent=predictedScore+' / 100'; const row=document.getElementById('chipRow'); row.innerHTML=''; keywordsFrom(predNow).forEach(t=>{ const c=document.createElement('span'); c.className='chip'; c.textContent=t; row.appendChild(c); }); oneLineTop(); fillAssumptions(); drawChartOnce(); }
+function updateAdjusted(){ const user={ noise:+noise.value, crowd:+crowd.value, shade:+shade.value, green:+green.value, temp:+temp.value, aq:predNow.aq, amenities:predNow.amenities }; const s=compute(user); const [lab]=bucket(s); document.getElementById('userStatusLabel').textContent=lab; document.getElementById('userStatusScore').textContent=Math.round(s)+' / 100'; fillBreakdown(user); }
+['noise','crowd','shade','green','temp'].forEach(id=>document.getElementById(id).addEventListener('input', updateAdjusted));
+renderPredicted(); updateAdjusted();
 </script>
 <script src="script.js"></script>
 
