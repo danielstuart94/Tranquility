@@ -1,1 +1,49 @@
-<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><link rel='icon' href='favicon.png'><title>The Ritzy, Brixton — Tqind</title><link rel='stylesheet' href='styles.css'></head><body><div class='container'><nav><div class='brand'><img src='logo.png'><strong>Tqind</strong></div><a class='btn' href='demos.html'>Back</a></nav><section class='hero'><div class='badge' id='statusBadge'><span id='statusLabel'>-</span> <span class='sub' id='statusScore'></span></div><div class='guidance' id='guidanceText'>Checking conditions...</div><a class='btn' style='background:#0b1f1d' target='_blank' href='https://www.google.com/maps/search/?api=1&query=The%20Ritzy%2C%20Brixton%2C%20London'>View on Google Maps</a><p>The Ritzy, Brixton — hour-by-hour tranquillity (next 24h). Predicted score remains fixed. Adjust assumptions below to compare.</p></section><div class='two'><div class='card'><h3>24h forecast</h3><div class='chart'><svg viewBox='0 0 1000 200' preserveAspectRatio='none'><polyline id='line' fill='none' stroke='currentColor' stroke-width='3' points=''/></svg><div class='gridCols' id='chartLabels'></div></div><small>Evening adjustment is automatic after 19:00.</small><details open><summary>See breakdown</summary><div id='breakdownRows'></div></details><details open><summary>See assumptions used</summary><div id='assumptionRows'></div></details></div><div class='card'><h3>Assumptions</h3><div class='badge' style='margin:6px 0;'><span id='userStatusLabel'>-</span> <span class='sub' id='userStatusScore'>-</span></div><details open><summary>Adjust assumptions</summary><label>Noise (dB proxy, lower is better)</label><input id='noise' type='range' min='0' max='100' value='65'><label>Crowd density</label><input id='crowd' type='range' min='0' max='100' value='70'><label>Shade / microclimate</label><input id='shade' type='range' min='0' max='100' value='30'><label>Greenery / planting</label><input id='green' type='range' min='0' max='100' value='20'><label>Thermal comfort</label><input id='temp' type='range' min='0' max='100' value='55'></details></div></div><footer class='small'>© 2025 Tqind</footer><script src='demo.js'></script><script>mountDemo({aq:55, amen:60, rain:false, defaults:{noise:65,crowd:70,shade:30,green:20,temp:55}});</script></div></body></html>
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="favicon.png"><title>The Ritzy, Brixton — Tqind</title>
+<link rel="stylesheet" href="styles.css"></head>
+<body><div class="container">
+<nav><div class="brand"><img src="logo.png"><strong>Tqind</strong></div><a class="btn" href="demos.html">Back</a></nav>
+<section class="hero">
+  <div class="badge" id="statusBadge"><span id="statusLabel">-</span> <span class="sub" id="statusScore"></span></div>
+  <div class="kwords" id="kwords"></div>
+  <a class="btn" style="background:#0b1f1d" target="_blank" href="https://www.google.com/maps/search/?api=1&query=The%20Ritzy%2C%20Brixton%2C%20London">View on Google Maps</a>
+  <p>The Ritzy, Brixton — hour-by-hour tranquillity (next 24h). The live score uses fixed assumptions below. Your sliders show a comparison score.</p>
+</section>
+<div class="two">
+  <div class="card">
+    <h3>24h forecast</h3>
+    <div class="chart">
+      <svg viewBox="0 0 1000 220" preserveAspectRatio="none">
+        <polyline id="line" fill="none" stroke="currentColor" stroke-width="3" points=""/>
+      </svg>
+      <div class="gridCols" id="chartLabels"></div>
+    </div>
+    <small>Evening quiet hours are automatic after 19:00.</small>
+    <details open><summary>See assumptions used</summary><div id="assumptionRows"></div></details>
+    <details open><summary>See factor breakdown</summary><div id="breakdownRows"></div></details>
+  </div>
+  <div class="card">
+    <h3>Your adjusted score</h3>
+    <div class="badge"><span id="userStatusLabel">-</span> <span class="sub" id="userStatusScore">-</span></div>
+    <details open><summary>Adjust assumptions</summary>
+      <label>Noise (proxy, lower is better)</label><input id="noise" type="range" min="0" max="100" value="65">
+      <label>Crowd density</label><input id="crowd" type="range" min="0" max="100" value="70">
+      <label>Shade / microclimate</label><input id="shade" type="range" min="0" max="100" value="30">
+      <label>Greenery / planting</label><input id="green" type="range" min="0" max="100" value="20">
+      <label>Thermal comfort</label><input id="temp" type="range" min="0" max="100" value="55">
+    </details>
+    <hr>
+    <div class="small">Tips respond to rain, wind, events, and the assumptions.</div>
+  </div>
+</div>
+<footer class="small">© 2025 Tqind</footer>
+<script src="demo.js"></script>
+<script>
+// Mount with explicit weather/event inputs for clearer guidance
+mountDemo({
+  defaults:{noise:65,crowd:70,shade:30,green:20,temp:55},
+  aq:60, amen:60, rain:true, wind:55, event:true
+});
+</script>
+</div></body></html>
