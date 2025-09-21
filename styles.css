@@ -1,22 +1,11 @@
 :root{--brand:#2D8A7A;--ink:#0b1f1d;--muted:#6b7280;--line:#e5e7eb}
 *{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
-.container{max-width:1000px;margin:0 auto;padding:20px}
+.container{max-width:1120px;margin:0 auto;padding:22px}
 nav{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .brand{display:flex;gap:8px;align-items:center}.brand img{width:28px;height:28px;border-radius:6px}
-.btn{background:var(--brand);color:#fff;text-decoration:none;border-radius:10px;padding:9px 12px;font-weight:700;display:inline-block}
+.btn{background:var(--brand);color:#fff;text-decoration:none;border:0;border-radius:10px;padding:9px 12px;font-weight:700;display:inline-block}
 .hero h1{margin:6px 0}.hero p{margin:0;color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fafafa}
-.two{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
-@media(max-width:800px){.two{grid-template-columns:1fr}}
-.badge{display:inline-flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;font-weight:800}
-.badge .sub{font-size:12px;color:var(--muted)}
-.badge.poor{background:#fee2e2;color:#b91c1c}.badge.fair{background:#fef3c7;color:#b45309}.badge.good{background:#dcfce7;color:#065f46}.badge.great{background:#dbeafe;color:#1e40af}
-.kwords{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.k{border:1px solid var(--line);background:#fff;padding:4px 8px;border-radius:9999px;font-size:12px}
+.card{background:#fafafa;border:1px solid var(--line);border-radius:14px;padding:14px}
 .chart{border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px}
 svg{width:100%;height:220px;display:block}
 .gridCols{display:grid;grid-template-columns:repeat(24,1fr)}.tick{font-size:11px;color:var(--muted);text-align:center}
-label{display:block;margin:8px 0 4px;font-weight:600}input[type=range]{width:100%}
-small{color:var(--muted);font-size:12px}
-.center{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
-.center img{width:120px;height:120px;border-radius:16px;margin-bottom:10px}

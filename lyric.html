@@ -5,41 +5,24 @@
 <body><div class="container">
 <nav><div class="brand"><img src="logo.png"><strong>Tqind</strong></div><a class="btn" href="demos.html">Back</a></nav>
 <section class="hero">
-  <div class="badge" id="statusBadge"><span id="statusLabel">-</span> <span class="sub" id="statusScore"></span></div>
-  <div class="kwords" id="kwords"></div>
+  <div class="badge" id="demo-lyric-badge"><span id="demo-lyric-lab">-</span> <span class="sub" id="demo-lyric-scr"></span></div>
   <a class="btn" style="background:#0b1f1d" target="_blank" href="https://www.google.com/maps/search/?api=1&query=Lyric%20Square%2C%20Hammersmith%2C%20London">View on Google Maps</a>
-  <p>Lyric Square, Hammersmith — 24h tranquillity forecast. Live score uses fixed assumptions. Your sliders show a comparison score.</p>
+  <p>Lyric Square, Hammersmith — live score and 24‑hour projection.</p>
 </section>
-<div class="two">
-  <div class="card">
-    <h3>24h forecast</h3>
-    <div class="chart">
-      <svg viewBox="0 0 1000 220" preserveAspectRatio="none">
-        <polyline id="line" fill="none" stroke="currentColor" stroke-width="3" points=""/>
-      </svg>
-      <div class="gridCols" id="chartLabels"></div>
-    </div>
-    <small>Evening quiet hours apply after 19:00.</small>
-    <details open><summary>See assumptions</summary><div id="assumptionRows"></div></details>
-    <details open><summary>Factor breakdown</summary><div id="breakdownRows"></div></details>
-  </div>
-  <div class="card">
-    <h3>Your adjusted score</h3>
-    <div class="badge"><span id="userStatusLabel">-</span> <span class="sub" id="userStatusScore">-</span></div>
-    <details open><summary>Adjust assumptions</summary>
-      <label>Noise (lower better)</label><input id="noise" type="range" min="0" max="100" value="60">
-      <label>Crowd</label><input id="crowd" type="range" min="0" max="100" value="55">
-      <label>Shade</label><input id="shade" type="range" min="0" max="100" value="30">
-      <label>Green</label><input id="green" type="range" min="0" max="100" value="25">
-      <label>Thermal</label><input id="temp" type="range" min="0" max="100" value="50">
-    </details>
+<div class="card">
+  <h3>24h forecast</h3>
+  <div class="chart">
+    <svg viewBox="0 0 1000 220" preserveAspectRatio="none">
+      <polyline id="demo-lyric-line" fill="none" stroke="currentColor" stroke-width="3" points=""/>
+    </svg>
+    <div class="gridCols" id="demo-lyric-ticks"></div>
   </div>
 </div>
 <script src="demo.js"></script>
 <script>
-tqindMount({
+mountLive('demo-lyric', {
   defaults:{noise:60,crowd:55,shade:30,green:25,temp:50},
-  aq:55, amen:65, rain:false, wind:35, event:true
+  aq:55, amen:65, rain:false, event:true
 });
 </script>
 </div></body></html>
