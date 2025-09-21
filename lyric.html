@@ -1,28 +1,95 @@
 <!doctype html><html><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="favicon.png"><title>Lyric Square, Hammersmith — Tqind</title>
-<link rel="stylesheet" href="styles.css"></head>
-<body><div class="container">
-<nav><div class="brand"><img src="logo.png"><strong>Tqind</strong></div><a class="btn" href="demos.html">Back</a></nav>
-<section class="hero">
-  <div class="badge" id="demo-lyric-badge"><span id="demo-lyric-lab">-</span> <span class="sub" id="demo-lyric-scr"></span></div>
-  <a class="btn" style="background:#0b1f1d" target="_blank" href="https://www.google.com/maps/search/?api=1&query=Lyric%20Square%2C%20Hammersmith%2C%20London">View on Google Maps</a>
-  <p>Lyric Square, Hammersmith — live score and 24‑hour projection.</p>
-</section>
-<div class="card">
-  <h3>24h forecast</h3>
-  <div class="chart">
-    <svg viewBox="0 0 1000 220" preserveAspectRatio="none">
-      <polyline id="demo-lyric-line" fill="none" stroke="currentColor" stroke-width="3" points=""/>
-    </svg>
-    <div class="gridCols" id="demo-lyric-ticks"></div>
+<link rel="stylesheet" href="styles_dark.css"></head>
+<body>
+<div class="wrap">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+    <img src="logo.png" alt="Tqind" style="width:22px;height:22px;border-radius:6px">
+    <h1>Plaza Comfort Score</h1>
+    <span class="sub">Lyric Square, Hammersmith • live demo</span>
   </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="score">
+        <div class="ring" style="--p:0"><span id="score">–</span></div>
+        <div>
+          <div class="sub">Current band</div>
+          <div id="band" style="font-weight:800;font-size:18px">calculating…</div>
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+
+      <div class="kvs">
+        <div class="kv"><h4>Weather now</h4><div class="sub small" id="wx">—</div></div>
+        <div class="kv"><h4>Air & noise</h4><div class="sub small" id="aq">—</div></div>
+      </div>
+
+      <div class="kv" style="margin-top:10px">
+        <h4>Next 24 hours (07:00–23:00)</h4>
+        <div id="chart" style="height:220px"></div>
+        <div class="tip" id="peaks">—</div>
+      </div>
+
+      <div class="tip" id="tip">Tip loads here</div>
+      <div class="small" style="margin-top:8px">
+        Sources: Open‑Meteo weather & air‑quality. DEFRA strategic noise baseline set as a site constant for demo.
+        <a id="refresh" href="#">Refresh</a>
+      </div>
+    </div>
+
+    <div class="card controls">
+      <div class="control">
+        <h3>Feedback</h3>
+        <div class="sub small">Does this match how it feels right now?</div>
+        <div style="display:flex;gap:8px;margin:8px 0">
+          <button class="btn" id="fbYes" type="button">Yes</button>
+          <button class="btn" id="fbNo" type="button">No</button>
+          <label class="sub small" style="display:flex;align-items:center;gap:6px;margin-left:8px"><input type="checkbox" id="consent" checked> allow anonymous feedback</label>
+        </div>
+        <textarea id="fbText" rows="4" placeholder="optional comment" style="width:100%"></textarea>
+        <div id="fbStatus" class="small" style="margin-top:6px"></div>
+      </div>
+
+      <div class="control">
+        <h3>Site constants</h3>
+        <div class="row">
+          <label class="sub small">DEFRA Lden (dB):<input id="lden" type="number" value="60" step="1" min="30" max="80"></label>
+          <label class="sub small">Amenity factor (0–1):<input id="amenity" type="number" value="0.6" step="0.05" min="0" max="1"></label>
+          <label class="sub small">Shade fraction at 09:00 (0–1):<input id="shade" type="number" value="0.3" step="0.05" min="0" max="1"></label>
+          <label class="sub small">Shelter factor (0–1):<input id="shelter" type="number" value="0.2" step="0.05" min="0" max="1"></label>
+          <label class="sub small">Busy slider (observed) 0–100:<input id="busySlider" type="range" value="55" min="0" max="100"></label>
+        </div>
+        <div class="small">Amenity down‑weights the ceiling for places with low greenery or visual delight. Busy slider is a manual override until you wire a real feed.</div>
+      </div>
+
+      <div class="control">
+        <h3>Weights</h3>
+        <div class="row">
+          <label class="sub small">Thermal 35%<input id="wThermal" type="number" value="35" step="1" min="0" max="100"></label>
+          <label class="sub small">Acoustic 15%<input id="wAcoustic" type="number" value="15" step="1" min="0" max="100"></label>
+          <label class="sub small">Air 10%<input id="wAir" type="number" value="10" step="1" min="0" max="100"></label>
+          <label class="sub small">Wind 15%<input id="wWind" type="number" value="15" step="1" min="0" max="100"></label>
+          <label class="sub small">SunFit 10%<input id="wSun" type="number" value="10" step="1" min="0" max="100"></label>
+          <label class="sub small">Busyness 10%<input id="wBusy" type="number" value="10" step="1" min="0" max="100"></label>
+          <label class="sub small">Amenity 5%<input id="wAmen" type="number" value="5" step="1" min="0" max="100"></label>
+          <label class="sub small">Rain penalty max<input id="rainMax" type="number" value="20" step="1" min="0" max="60"></label>
+        </div>
+        <div class="small">Weights auto‑normalise to 100% before penalties.</div>
+      </div>
+
+      <div class="control">
+        <h3>Debug</h3>
+        <div id="debug" class="small">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© Tqind</div>
 </div>
-<script src="demo.js"></script>
 <script>
-mountLive('demo-lyric', {
-  defaults:{noise:60,crowd:55,shade:30,green:25,temp:50},
-  aq:55, amen:65, rain:false, event:true
-});
+window.SITE = {"name": "Lyric Square, Hammersmith", "lat": 51.493, "lon": -0.226, "tz": "Europe/London"};
 </script>
-</div></body></html>
+<script src="core.js"></script>
+</body></html>
