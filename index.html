@@ -1,8 +1,43 @@
-<!doctype html><html><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="favicon.png"><title>Tqind — Home</title>
-<link rel="stylesheet" href="styles.css"></head>
-<body><div class="container">
-<nav><div class="brand"><img src="logo.png"><strong>Tqind</strong></div><a class="btn" href="demos.html">Live demos</a></nav>
-<section class="hero"><h1>Make outside the default.</h1><p>We bring people out to experience the world around them.</p></section>
-</div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tqind · Demo</title>
+  <link rel="icon" href="favicon.ico"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <div class="brand"><img src="logo.svg" alt="Tqind"/><div><div class="name">Tqind</div><div class="tag">Measuring calm in a noisy world</div></div></div>
+      <nav><a href="index.html">Home</a><a href="demos.html">Live demos</a><a href="articles.html">Articles</a><a class="btn btn-primary" href="signup.html">Sign up</a></nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="container" style="padding:48px 0 24px">
+        <div class="small">Alpha demo</div>
+        <h1>The Tranquillity Index for digital experiences</h1>
+        <p class="small">Quantify cognitive load and environmental stressors across sites and apps. Benchmark, compare, and improve user calm.</p>
+        <div class="mt-6">
+          <a class="btn btn-primary" href="demos.html">View live demos</a>
+          <a class="btn" style="color:var(--text)" href="articles.html">Read articles</a>
+        </div>
+      </div>
+    </section>
+    <div class="container mt-8">
+      <div class="cards">
+        <div class="card"><div class="small">Live demos</div><h2>See Tqind in action</h2><p class="small">Interactive examples with real-time tranquillity signals. Placeholders for 3–5 sites.</p></div>
+        <div class="card"><div class="small">Articles</div><h2>Method, metrics, and notes</h2><p class="small">Short primers and deep dives. Placeholder cards live on the Articles page.</p></div>
+        <div class="card"><div class="small">Signup</div><h2>Get early access</h2><p class="small">Join the list. Receive demo invites and progress updates.</p></div>
+      </div>
+    </div>
+  </main>
+  <footer><div class="container row"><div>© <span id="y"></span> Tqind</div><div><a href="articles.html">Articles</a><a href="demos.html" style="margin-left:16px">Demos</a><a href="signup.html" style="margin-left:16px">Sign up</a></div></div></footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

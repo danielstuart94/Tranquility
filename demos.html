@@ -1,13 +1,26 @@
-<!doctype html><html><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="favicon.png"><title>Live demos — Tqind</title>
-<link rel="stylesheet" href="styles.css"></head>
-<body><div class="container">
-<nav><div class="brand"><img src="logo.png"><strong>Tqind</strong></div><a class="btn" href="index.html">Home</a></nav>
-<section class="hero"><h1>Live demos</h1><p>Live score and 24‑hour projection.</p></section>
-<ul>
-  <li><a href="lyric.html">Lyric Square, Hammersmith</a></li>
-  <li><a href="ravenscourt.html">Ravenscourt Park</a></li>
-  <li><a href="ritzy.html">The Ritzy, Brixton</a></li>
-</ul>
-</div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tqind · Live demos</title>
+  <link rel="icon" href="favicon.ico"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav"><div class="brand"><img src="logo.svg" alt="Tqind"/><div><div class="name">Tqind</div><div class="tag">Measuring calm in a noisy world</div></div></div><nav><a href="index.html">Home</a><a href="demos.html">Live demos</a><a href="articles.html">Articles</a><a class="btn btn-primary" href="signup.html">Sign up</a></nav></div>
+  </header>
+  <main class="container" style="padding:36px 0 0">
+    <h1>Live demos</h1>
+    <p class="small">Embed or link to interactive prototypes. Replace placeholders with iframes or external links.</p>
+    <div class="cards mt-6">
+      <div class="card"><div style="aspect-ratio:16/9; background:#0a0f1d; border-radius:12px"></div><h2 class="mt-4">Demo 1</h2><p class="small">Placeholder description.</p></div>
+      <div class="card"><div style="aspect-ratio:16/9; background:#0a0f1d; border-radius:12px"></div><h2 class="mt-4">Demo 2</h2><p class="small">Placeholder description.</p></div>
+      <div class="card"><div style="aspect-ratio:16/9; background:#0a0f1d; border-radius:12px"></div><h2 class="mt-4">Demo 3</h2><p class="small">Placeholder description.</p></div>
+    </div>
+  </main>
+  <footer><div class="container row"><div>© <span id="y2"></span> Tqind</div><div><a href="articles.html">Articles</a><a href="signup.html" style="margin-left:16px">Sign up</a></div></div></footer>
+  <script>document.getElementById('y2').textContent = new Date().getFullYear();</script>
+</body>
+</html>
