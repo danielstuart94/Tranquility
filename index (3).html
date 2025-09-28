@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>tqind · Demo</title>
+  <link rel="icon" href="favicon.ico"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@600&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <div class="brand">
+        <img src="logo.svg" alt="tqind logo"/>
+        <div>
+          <div class="name">tqind</div>
+          <div class="tag">measuring calm in a noisy world</div>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="demos.html">Live demos</a>
+        <a href="articles.html">Articles</a>
+        <a class="btn btn-primary" href="signup.html">Sign up</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <span class="badge">alpha demo</span>
+      <h1 class="mt-2">The Tranquillity Index for digital experiences</h1>
+      <p class="small">Quantify cognitive load and environmental stressors across sites and apps. Benchmark and improve user calm.</p>
+      <div class="mt-6">
+        <a class="btn btn-primary" href="demos.html">View live demos</a>
+        <a class="btn" style="color:var(--text)" href="articles.html">Read articles</a>
+      </div>
+    </section>
+    <section class="mt-8">
+      <div class="cards">
+        <div class="card">
+          <div class="small">Live demos</div>
+          <h2>See tqind in action</h2>
+          <p class="small">Interactive examples with tranquillity signals. Includes Lyric Square.</p>
+        </div>
+        <div class="card">
+          <div class="small">Articles</div>
+          <h2>Method and notes</h2>
+          <p class="small">Short primers and deeper dives.</p>
+        </div>
+        <div class="card">
+          <div class="small">Signup</div>
+          <h2>Get early access</h2>
+          <p class="small">Join the list for demo invites and updates.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="container row">
+      <div>© <span id="y"></span> tqind</div>
+      <div><a href="articles.html">Articles</a><a href="demos.html" style="margin-left:16px">Demos</a><a href="signup.html" style="margin-left:16px">Sign up</a></div>
+    </div>
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

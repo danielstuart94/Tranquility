@@ -3,18 +3,29 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Tqind · Sign up</title>
+  <title>tqind · Sign up</title>
   <link rel="icon" href="favicon.ico"/>
   <link rel="stylesheet" href="styles.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@600&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header class="header"><div class="container nav"><div class="brand"><img src="logo.svg" alt="Tqind"/><div><div class="name">Tqind</div><div class="tag">Measuring calm in a noisy world</div></div></div><nav><a href="index.html">Home</a><a href="demos.html">Live demos</a><a href="articles.html">Articles</a><a class="btn btn-primary" href="signup.html">Sign up</a></nav></div></header>
-  <main class="container" style="padding:36px 0 0">
+  <header class="header"><div class="container nav"><div class="brand"><img src="logo.svg" alt="tqind logo"/><div><div class="name">tqind</div><div class="tag">measuring calm in a noisy world</div></div></div><nav><a href="index.html">Home</a><a href="demos.html">Live demos</a><a href="articles.html">Articles</a><a class="btn btn-primary" href="signup.html">Sign up</a></nav></div></header>
+  <main class="container" style="padding:24px 0 0">
     <h1>Sign up for early access</h1>
     <p class="small">Your details go straight into our Google Sheet.</p>
-    <div class="card mt-6"><div class="embed"><iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfXZW2rdqt4ATvLTgZCrJcbS5hkx80DOc0CrZOKmUlwTTUk_Q/viewform?embedded=true" width="100%" height="686" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe></div><p class="small mt-4">Privacy: store only the fields shown. Add your policy link here.</p></div>
+    <div class="card mt-6">
+      <div class="embed" style="position:relative; width:100%; min-height:70vh; border:0; border-radius:14px; overflow:hidden; background:#eef2f2">
+        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfXZW2rdqt4ATvLTgZCrJcbS5hkx80DOc0CrZOKmUlwTTUk_Q/viewform?embedded=true"
+                allow="clipboard-write" style="position:absolute; inset:0; width:100%; height:100%; border:0">
+          Loading…
+        </iframe>
+      </div>
+      <p class="small mt-4">Privacy: store only the fields shown. Add your policy link.</p>
+    </div>
   </main>
-  <footer><div class="container row"><div>© <span id="y4"></span> Tqind</div><div><a href="articles.html">Articles</a><a href="demos.html" style="margin-left:16px">Demos</a></div></div></footer>
+  <footer><div class="container row"><div>© <span id="y4"></span> tqind</div><div><a href="articles.html">Articles</a><a href="demos.html" style="margin-left:16px">Demos</a></div></div></footer>
   <script>document.getElementById('y4').textContent = new Date().getFullYear();</script>
 </body>
 </html>
