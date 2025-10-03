@@ -7,7 +7,7 @@
   <link rel="icon" href="favicon.ico"/>
   <meta name="description" content="Tqind demo for Lyric Square using live Open‑Meteo weather and air quality."/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@600&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -62,6 +62,8 @@
     .modal.open{display:flex} .modal .box{background:#fff;color:#111;border-radius:14px;max-width:520px;width:100%;padding:16px;border:1px solid #eee}
     .close{float:right;border:none;background:transparent;font-size:20px;cursor:pointer}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .embed{position:relative;width:100%;min-height:520px;border-radius:14px;overflow:hidden;background:#eef2f2;border:1px solid #e5e8eb}
+    .embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   </style>
 </head>
 <body>
@@ -91,7 +93,7 @@
         <div>
           <h1 id="hero-title">Tqind today</h1>
           <p class="advice" id="advice">Loading best time…</p>
-          <div class="meta"><span id="updated">Updated —</span> <span id="aqNote"></span>
+          <div class="meta"><span id="updated">Updated —</span>
             <button id="what" class="btn" style="margin-left:6px" aria-haspopup="dialog" aria-controls="modal">What is Tqind?</button>
           </div>
         </div>
@@ -123,6 +125,16 @@
       <h2 id="breakdown-title">Breakdown</h2>
       <div class="list" id="breakdownList"></div>
     </section>
+
+    <section aria-labelledby="feedback-title">
+      <h2 id="feedback-title">Feedback</h2>
+      <div class="card">
+        <p class="meta">Quick poll: Do you agree with today’s score? You can add a note.</p>
+        <div class="embed">
+          <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfGWNMqEV6ATblVHnoYaCDoRp9gaCK2G2sLBI3C2ySk8P3aiA/viewform?embedded=true">Loading…</iframe>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer role="contentinfo">
@@ -153,51 +165,54 @@
       const [wxa, aqa] = await Promise.all([fetch(wxUrl), fetch(aqUrl)]);
       wx = await wxa.json(); aq = await aqa.json();
     }catch(e){
-      console.warn('Live fetch failed, falling back to static sample', e);
+      console.warn('Live fetch failed, using fallback', e);
     }
 
-    // Build a unified hours array for next 24h from now
+    // Build hourly scores for next 24h from now
     const now = new Date();
-    const startIdx = (wx?.hourly?.time||[]).findIndex(t => new Date(t) >= now);
-    const hours = Array.from({length: 25}, (_,i)=> i*1); // 0..24
-    function at(series, baseIdx, offset){ return series?.[baseIdx+offset] ?? null; }
+    const times = wx?.hourly?.time || [];
+    const startIdx = times.findIndex(t => new Date(t) >= now);
+    function at(series, i){ return series?.[i] ?? null; }
+    const hourly = [];
+    if (wx && aq && startIdx>=0){
+      for (let i=0;i<24;i++){
+        const idx = startIdx + i;
+        const t = new Date(times[idx] || now);
+        const temp = at(wx.hourly.temperature_2m, idx);
+        const wind = at(wx.hourly.wind_speed_10m, idx);
+        const prob = at(wx.hourly.precipitation_probability, idx);
+        const uv = at(wx.hourly.uv_index, idx);
+        const pm25 = at(aq.hourly.pm2_5, idx);
+        hourly.push({ hour: t.getHours(), temp, wind, prob, uv, pm25 });
+      }
+    }
 
-    // Heuristic scoring per hour
-    function scoreHour(temp, wind, precipProb, pm25, uv){
+    function scoreHour(h){
       let s = 88;
+      const temp=h.temp, wind=h.wind, precipProb=h.prob, pm25=h.pm25, uv=h.uv;
       if (temp!==null){ if(temp<2) s-=15; else if(temp<7) s-=8; else if(temp>27) s-=18; else if(temp>23) s-=8; }
       if (wind!==null){ if(wind>14) s-=10; else if(wind>8) s-=5; }
-      if (precipProb!==null){ s -= Math.round(precipProb/10)*3; } // up to ~30 off in heavy rain risk
+      if (precipProb!==null){ s -= Math.round(precipProb/10)*3; }
       if (pm25!==null){ if(pm25>35) s-=15; else if(pm25>20) s-=8; }
       if (uv!==null){ if(uv>6) s-=6; else if(uv>3) s-=3; }
       return Math.max(0, Math.min(100, s));
     }
 
+    // Display forecast at 0,6,12,18,24 for chart/icons
     let forecast = [];
-    if (wx && aq && startIdx>=0){
-      for (let i=0;i<hours.length;i+=6){ // 0,6,12,18,24 for display
-        const t = new Date(wx.hourly.time[startIdx + i] || now);
-        const temp = at(wx.hourly.temperature_2m, startIdx, i);
-        const wind = at(wx.hourly.wind_speed_10m, startIdx, i);
-        const prob = at(wx.hourly.precipitation_probability, startIdx, i);
-        const uv = at(wx.hourly.uv_index, startIdx, i);
-        const pm25 = at(aq.hourly.pm2_5, startIdx, i);
-        const score = scoreHour(temp, wind, prob, pm25, uv);
-        forecast.push({ hour: t.getHours(), score, temp, wind, prob, uv, pm25 });
-      }
+    if (hourly.length){
+      const selIdx = [0,6,12,18,23].filter(i=>i<hourly.length);
+      forecast = selIdx.map(i=>({ hour: hourly[i].hour, score: scoreHour(hourly[i]), ...hourly[i] }));
     }else{
-      // fallback
       forecast = [{hour:0,score:62},{hour:6,score:71},{hour:12,score:82},{hour:18,score:74},{hour:24,score:68}];
     }
 
-    // Current hour score
+    // Current score
     const cur = forecast[0] || {score:75};
     const state = cur.score>=70?'Green':(cur.score>=40?'Amber':'Red');
     const ring = document.getElementById('ring');
     const scoreEl = document.getElementById('score');
     const stateLabel = document.getElementById('stateLabel');
-
-    // Animate ring
     const circumference = 2*Math.PI*94;
     ring.setAttribute('stroke-dasharray', String(circumference));
     ring.setAttribute('stroke-dashoffset', String(circumference));
@@ -214,26 +229,30 @@
     }
     requestAnimationFrame(step);
     stateLabel.textContent = state;
-
-    // Advice: choose best 3-hr window with max average score
-    let bestStart = 0, bestAvg = -1;
-    for(let i=0;i<forecast.length-2;i++){
-      const avg = (forecast[i].score + forecast[i+1].score + forecast[i+2].score)/3;
-      if(avg>bestAvg){ bestAvg=avg; bestStart=i; }
-    }
-    const h1 = forecast[bestStart]?.hour ?? 10;
-    const h2 = forecast[bestStart+2]?.hour ?? 13;
-    document.getElementById('advice').textContent = `Best time to visit: ${String(h1).padStart(2,'0')}:00–${String(h2).padStart(2,'0')}:00.`;
     document.getElementById('updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
-    // Forecast chart
+    // Best time window restricted to daylight 07:00–19:00
+    let bestStartHour = 10, bestAvg = -1;
+    if (hourly.length){
+      for (let i=0;i<hourly.length-2;i++){
+        const h = hourly[i].hour;
+        if (h < 7 || h > 17) continue; // ensure i..i+2 within 07–19
+        const s0=scoreHour(hourly[i]), s1=scoreHour(hourly[i+1]), s2=scoreHour(hourly[i+2]);
+        const avg=(s0+s1+s2)/3;
+        if (avg>bestAvg){ bestAvg=avg; bestStartHour=h; }
+      }
+    }
+    const h1 = String(bestStartHour).padStart(2,'0');
+    const h2 = String((bestStartHour+2)%24).padStart(2,'0');
+    document.getElementById('advice').textContent = `Best time to visit: ${h1}:00–${h2}:00.`;
+
+    // Chart
     const svg = document.getElementById('chart');
     const W = svg.clientWidth || 600, H = svg.clientHeight || 180;
     const pad = 10, x0=pad, x1=W-pad, y0=H-18, y1=12;
     function xFor(i){ return x0 + (x1-x0)*(i/(forecast.length-1)); }
     function yFor(s){ return y0 - (y0-y1)*(s/100); }
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    // Ticks
     const axis = document.createElementNS('http://www.w3.org/2000/svg','g');
     forecast.forEach((p,i)=>{
       const x=xFor(i);
@@ -244,13 +263,11 @@
       axis.appendChild(t);
     });
     svg.appendChild(axis);
-    // Line
     const d = forecast.map((p,i)=> (i===0?'M':'L') + xFor(i) + ' ' + yFor(p.score)).join(' ');
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', d); path.setAttribute('fill','none');
     path.setAttribute('stroke','var(--brand-teal)'); path.setAttribute('stroke-width','3'); path.setAttribute('stroke-linecap','round');
     svg.appendChild(path);
-    // Dots
     forecast.forEach((p,i)=>{
       const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
       c.setAttribute('cx', xFor(i)); c.setAttribute('cy', yFor(p.score));
@@ -259,7 +276,7 @@
       svg.appendChild(c);
     });
 
-    // Weather icons row
+    // Icons
     const icons = document.getElementById('wxIcons');
     icons.innerHTML = forecast.map(p => {
       const wind = p.wind ?? 0, prob = p.prob ?? 0, temp = p.temp ?? 0;
@@ -267,7 +284,7 @@
       return `<span aria-label="${p.hour}:00, temp ${Math.round(temp||0)}°C, wind ${Math.round(wind||0)} m/s, rain ${prob||0}%">${i} ${p.hour}h</span>`;
     }).join('');
 
-    // Tips based on conditions
+    // Tips
     const tips = [];
     const mid = forecast.find(p=>p.hour===12) || forecast[2] || cur;
     if ((mid.temp||0) > 24) tips.push("Seek shade 12–15h");
@@ -282,7 +299,7 @@
       tipsList.appendChild(li);
     });
 
-    // Breakdown: live weather + AQ, plus placeholders
+    // Breakdown with "Agree?"
     const list = document.getElementById('breakdownList');
     const factors = [
       {key:'air', label:'Air quality (PM2.5)', value: (aq?.hourly?.pm2_5?.[startIdx] ?? null), unit:'µg/m³',
@@ -320,13 +337,19 @@
         <div class="content">
           <div class="kv"><strong>${val}</strong> — ${meaning}</div>
           <div class="kv">Source: <span>${f.source}</span></div>
-          <div class="actions" role="group" aria-label="Confirm current status">
-            <button class="btn">Still true now? Yes</button>
+          <div class="actions" role="group" aria-label="Agree with this?">
+            <button class="btn">Agree? Yes</button>
             <button class="btn">No</button>
           </div>
         </div>`;
       list.appendChild(details);
     });
+
+    // Modal
+    const modal = document.getElementById('modal');
+    document.getElementById('what').addEventListener('click', ()=> modal.classList.add('open'));
+    document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('open'));
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.classList.remove('open'); });
 
   })();
   </script>
