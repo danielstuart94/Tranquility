@@ -7,7 +7,7 @@
   <link rel="icon" href="favicon.ico"/>
   <meta name="description" content="Tqind demo for Lyric Square using live Open‑Meteo weather and air quality."/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@600&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -157,6 +157,13 @@
     const lat = 51.4939, lon = -0.2268; // Lyric Square approx
     const tz = 'Europe/London';
 
+    // Structural dampers for this location
+    const STRUCTURAL = {
+      cap: 76,                 // hard ceiling for Lyric Square
+      multiplier: 0.85,        // global dampening for built-up square
+      penalties: { green: 6, traffic: 6 } // fixed knocks
+    };
+
     const wxUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,wind_speed_10m,precipitation_probability,uv_index&timezone=${encodeURIComponent(tz)}`;
     const aqUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5,pm10,ozone&timezone=${encodeURIComponent(tz)}`;
 
@@ -168,7 +175,7 @@
       console.warn('Live fetch failed, using fallback', e);
     }
 
-    // Build hourly scores for next 24h from now
+    // Build hourly series for next 24h
     const now = new Date();
     const times = wx?.hourly?.time || [];
     const startIdx = times.findIndex(t => new Date(t) >= now);
@@ -187,28 +194,68 @@
       }
     }
 
-    function scoreHour(h){
+    // Revised weather score
+    function rawWeatherScore(h){
       let s = 88;
-      const temp=h.temp, wind=h.wind, precipProb=h.prob, pm25=h.pm25, uv=h.uv;
-      if (temp!==null){ if(temp<2) s-=15; else if(temp<7) s-=8; else if(temp>27) s-=18; else if(temp>23) s-=8; }
-      if (wind!==null){ if(wind>14) s-=10; else if(wind>8) s-=5; }
-      if (precipProb!==null){ s -= Math.round(precipProb/10)*3; }
-      if (pm25!==null){ if(pm25>35) s-=15; else if(pm25>20) s-=8; }
-      if (uv!==null){ if(uv>6) s-=6; else if(uv>3) s-=3; }
+      const {temp, wind, prob, pm25, uv} = h;
+
+      // temperature penalties
+      if (temp != null){
+        if (temp < 2) s -= 25;
+        else if (temp <= 6) s -= 18;
+        else if (temp <= 11) s -= 12;
+        else if (temp <= 17) s -= 6;
+        else if (temp >= 34) s -= 25;
+        else if (temp >= 31) s -= 18;
+        else if (temp >= 28) s -= 12;
+        else if (temp >= 25) s -= 6;
+      }
+      // wind
+      if (wind != null){
+        if (wind > 14) s -= 12;
+        else if (wind > 8) s -= 6;
+        else if (wind > 5) s -= 3;
+      }
+      // rain probability
+      if (prob != null){
+        s -= Math.round(prob/10)*3; // up to ~30 off
+      }
+      // PM2.5
+      if (pm25 != null){
+        if (pm25 > 35) s -= 15;
+        else if (pm25 > 20) s -= 8;
+        else if (pm25 > 12) s -= 4;
+      }
+      // UV
+      if (uv != null){
+        if (uv > 6) s -= 6;
+        else if (uv > 3) s -= 3;
+      }
+
       return Math.max(0, Math.min(100, s));
     }
 
-    // Display forecast at 0,6,12,18,24 for chart/icons
+    function applyStructural(s){
+      let out = (s * STRUCTURAL.multiplier) - (STRUCTURAL.penalties.green + STRUCTURAL.penalties.traffic);
+      out = Math.min(STRUCTURAL.cap, out);
+      return Math.max(0, Math.round(out));
+    }
+
+    // Select 0,6,12,18,24
     let forecast = [];
     if (hourly.length){
       const selIdx = [0,6,12,18,23].filter(i=>i<hourly.length);
-      forecast = selIdx.map(i=>({ hour: hourly[i].hour, score: scoreHour(hourly[i]), ...hourly[i] }));
+      forecast = selIdx.map(i=>{
+        const base = rawWeatherScore(hourly[i]);
+        const score = applyStructural(base);
+        return { hour: hourly[i].hour, score, ...hourly[i] };
+      });
     }else{
-      forecast = [{hour:0,score:62},{hour:6,score:71},{hour:12,score:82},{hour:18,score:74},{hour:24,score:68}];
+      forecast = [{hour:0,score:52},{hour:6,score:58},{hour:12,score:66},{hour:18,score:60},{hour:24,score:55}];
     }
 
     // Current score
-    const cur = forecast[0] || {score:75};
+    const cur = forecast[0] || {score:62};
     const state = cur.score>=70?'Green':(cur.score>=40?'Amber':'Red');
     const ring = document.getElementById('ring');
     const scoreEl = document.getElementById('score');
@@ -231,14 +278,17 @@
     stateLabel.textContent = state;
     document.getElementById('updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
-    // Best time window restricted to daylight 07:00–19:00
+    // Best time 07:00–19:00 using revised score
+    function scored(i){
+      const base = rawWeatherScore(hourly[i]);
+      return applyStructural(base);
+    }
     let bestStartHour = 10, bestAvg = -1;
     if (hourly.length){
       for (let i=0;i<hourly.length-2;i++){
         const h = hourly[i].hour;
-        if (h < 7 || h > 17) continue; // ensure i..i+2 within 07–19
-        const s0=scoreHour(hourly[i]), s1=scoreHour(hourly[i+1]), s2=scoreHour(hourly[i+2]);
-        const avg=(s0+s1+s2)/3;
+        if (h < 7 || h > 17) continue;
+        const avg = (scored(i)+scored(i+1)+scored(i+2))/3;
         if (avg>bestAvg){ bestAvg=avg; bestStartHour=h; }
       }
     }
@@ -276,14 +326,6 @@
       svg.appendChild(c);
     });
 
-    // Icons
-    const icons = document.getElementById('wxIcons');
-    icons.innerHTML = forecast.map(p => {
-      const wind = p.wind ?? 0, prob = p.prob ?? 0, temp = p.temp ?? 0;
-      const i = prob>50 ? '🌧️' : (temp>24 ? '☀️' : (prob>20 ? '🌦️' : '🌤️'));
-      return `<span aria-label="${p.hour}:00, temp ${Math.round(temp||0)}°C, wind ${Math.round(wind||0)} m/s, rain ${prob||0}%">${i} ${p.hour}h</span>`;
-    }).join('');
-
     // Tips
     const tips = [];
     const mid = forecast.find(p=>p.hour===12) || forecast[2] || cur;
@@ -299,7 +341,7 @@
       tipsList.appendChild(li);
     });
 
-    // Breakdown with "Agree?"
+    // Breakdown list (labels unchanged)
     const list = document.getElementById('breakdownList');
     const factors = [
       {key:'air', label:'Air quality (PM2.5)', value: (aq?.hourly?.pm2_5?.[startIdx] ?? null), unit:'µg/m³',
