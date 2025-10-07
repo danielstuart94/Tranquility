@@ -39,7 +39,7 @@
     .score-label{position:absolute;left:50%;transform:translateX(-50%);bottom:-6px;font-size:12px;color:var(--muted)}
     .advice{font-size:18px} .meta{font-size:12px;color:var(--muted)}
     .tag{display:inline-block;background:#eef6f5;color:#1f4a46;border-radius:999px;padding:4px 10px;font-size:12px}
-    .chart{width:100%;height:180px} .legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);margin-top:6px}
+    .chart{width:100%;height:200px} .legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted);margin-top:6px}
     .legend .dot{width:10px;height:10px;border-radius:50%}
     .row{display:grid;gap:16px} @media(min-width:720px){.row{grid-template-columns:1fr 1fr}}
     .icons{display:flex;justify-content:space-between;margin-top:6px} .icons span{font-size:12px;color:var(--muted)}
@@ -198,8 +198,6 @@
     function rawWeatherScore(h){
       let s = 88;
       const {temp, wind, prob, pm25, uv} = h;
-
-      // temperature penalties
       if (temp != null){
         if (temp < 2) s -= 25;
         else if (temp <= 6) s -= 18;
@@ -210,28 +208,18 @@
         else if (temp >= 28) s -= 12;
         else if (temp >= 25) s -= 6;
       }
-      // wind
       if (wind != null){
         if (wind > 14) s -= 12;
         else if (wind > 8) s -= 6;
         else if (wind > 5) s -= 3;
       }
-      // rain probability
-      if (prob != null){
-        s -= Math.round(prob/10)*3; // up to ~30 off
-      }
-      // PM2.5
+      if (prob != null){ s -= Math.round(prob/10)*3; }
       if (pm25 != null){
         if (pm25 > 35) s -= 15;
         else if (pm25 > 20) s -= 8;
         else if (pm25 > 12) s -= 4;
       }
-      // UV
-      if (uv != null){
-        if (uv > 6) s -= 6;
-        else if (uv > 3) s -= 3;
-      }
-
+      if (uv != null){ if (uv > 6) s -= 6; else if (uv > 3) s -= 3; }
       return Math.max(0, Math.min(100, s));
     }
 
@@ -296,28 +284,56 @@
     const h2 = String((bestStartHour+2)%24).padStart(2,'0');
     document.getElementById('advice').textContent = `Best time to visit: ${h1}:00–${h2}:00.`;
 
-    // Chart
+    // Chart with Y-axis at 0,50,100
     const svg = document.getElementById('chart');
-    const W = svg.clientWidth || 600, H = svg.clientHeight || 180;
-    const pad = 10, x0=pad, x1=W-pad, y0=H-18, y1=12;
+    const W = svg.clientWidth || 600, H = svg.clientHeight || 200;
+    const padL = 34, padR = 10, padT = 12, padB = 22;
+    const x0=padL, x1=W-padR, y0=H-padB, y1=padT;
     function xFor(i){ return x0 + (x1-x0)*(i/(forecast.length-1)); }
     function yFor(s){ return y0 - (y0-y1)*(s/100); }
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const axis = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+    // Y axis
+    const axisY = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const lineY = document.createElementNS('http://www.w3.org/2000/svg','line');
+    lineY.setAttribute('x1', x0); lineY.setAttribute('x2', x0);
+    lineY.setAttribute('y1', y1); lineY.setAttribute('y2', y0);
+    lineY.setAttribute('stroke', '#cfd3d7'); lineY.setAttribute('stroke-width', '1');
+    axisY.appendChild(lineY);
+    [0,50,100].forEach(v=>{
+      const ty = yFor(v);
+      const tick = document.createElementNS('http://www.w3.org/2000/svg','line');
+      tick.setAttribute('x1', x0-4); tick.setAttribute('x2', x0);
+      tick.setAttribute('y1', ty); tick.setAttribute('y2', ty);
+      tick.setAttribute('stroke', '#cfd3d7'); tick.setAttribute('stroke-width', '1');
+      axisY.appendChild(tick);
+      const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+      label.setAttribute('x', x0-8); label.setAttribute('y', ty+4);
+      label.setAttribute('text-anchor','end'); label.setAttribute('font-size','11'); label.setAttribute('fill','#616771');
+      label.textContent = String(v);
+      axisY.appendChild(label);
+    });
+    svg.appendChild(axisY);
+
+    // X ticks
+    const axisX = document.createElementNS('http://www.w3.org/2000/svg','g');
     forecast.forEach((p,i)=>{
       const x=xFor(i);
       const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-      t.setAttribute('x', x); t.setAttribute('y', H-2);
+      t.setAttribute('x', x); t.setAttribute('y', H-4);
       t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','11'); t.setAttribute('fill','#7a7f87');
       t.textContent=String(p.hour);
-      axis.appendChild(t);
+      axisX.appendChild(t);
     });
-    svg.appendChild(axis);
+    svg.appendChild(axisX);
+
+    // Line
     const d = forecast.map((p,i)=> (i===0?'M':'L') + xFor(i) + ' ' + yFor(p.score)).join(' ');
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', d); path.setAttribute('fill','none');
     path.setAttribute('stroke','var(--brand-teal)'); path.setAttribute('stroke-width','3'); path.setAttribute('stroke-linecap','round');
     svg.appendChild(path);
+    // Dots
     forecast.forEach((p,i)=>{
       const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
       c.setAttribute('cx', xFor(i)); c.setAttribute('cy', yFor(p.score));
@@ -325,6 +341,14 @@
       c.setAttribute('aria-label', `Hour ${p.hour}, score ${p.score}`);
       svg.appendChild(c);
     });
+
+    // Icons
+    const icons = document.getElementById('wxIcons');
+    icons.innerHTML = forecast.map(p => {
+      const wind = p.wind ?? 0, prob = p.prob ?? 0, temp = p.temp ?? 0;
+      const i = prob>50 ? '🌧️' : (temp>24 ? '☀️' : (prob>20 ? '🌦️' : '🌤️'));
+      return `<span aria-label="${p.hour}:00, temp ${Math.round(temp||0)}°C, wind ${Math.round(wind||0)} m/s, rain ${prob||0}%">${i} ${p.hour}h</span>`;
+    }).join('');
 
     // Tips
     const tips = [];
@@ -341,7 +365,7 @@
       tipsList.appendChild(li);
     });
 
-    // Breakdown list (labels unchanged)
+    // Breakdown (labels unchanged)
     const list = document.getElementById('breakdownList');
     const factors = [
       {key:'air', label:'Air quality (PM2.5)', value: (aq?.hourly?.pm2_5?.[startIdx] ?? null), unit:'µg/m³',
